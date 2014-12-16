@@ -1,0 +1,94 @@
+/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&soc {
+	i2c@78b6000 { /* BLSP1 QUP2 */
+		st@18 {
+			compatible = "st,lis3dh";
+			reg = <0x18>;
+			st,min-interval = <5>;
+			st,init-interval = <200>;
+			st,axis-map-x = <0>;
+			st,axis-map-y = <1>;
+			st,axis-map-z = <2>;
+			st,g-range = <4>;
+			st,negate-x;
+			st,negate-y;
+			vdd-supply = <&pm8916_l17>;
+			vio-supply = <&pm8916_l6>;
+		};
+		kxtik@0f {
+			compatible = "kionix,kxtj9";
+			reg = <0x0f>;
+			kionix,min-interval = <2>;
+			kionix,init-interval = <200>;
+			kionix,axis-map-x = <0>;
+			kionix,axis-map-y = <1>;
+			kionix,axis-map-z = <2>;
+			kionix,g-range = <4>;
+			kionix,negate-x;
+			kionix,negate-y;
+			kionix,res-12bit;
+			vdd-supply = <&pm8916_l17>;
+			vio-supply = <&pm8916_l6>;
+		};
+		akm@c {
+			compatible = "ak,ak09911";
+			reg = <0x0c>;
+			pinctrl-names = "ak09911_default","ak09911_sleep";
+			pinctrl-0 = <&ak09911_default>;
+			pinctrl-1 = <&ak09911_sleep>;
+			vdd-supply = <&pm8916_l17>;
+			vio-supply = <&pm8916_l6>;
+			akm,layout = <0x6>;
+			akm,gpio_rstn = <&msm_gpio 69 0x0>;
+			/*akm,auto-report;*/
+		};
+	    ams-sensor@39 {
+            status = "okay";
+            reg = <0x39>;
+            compatible = "ams,ams-sensor";
+            interrupt-parent = <&msm_gpio>;
+            ams,irq-gpio = <&msm_gpio 113 0x2002>;
+            pinctrl-names = "tmd2772_default","tmd2772_sleep";
+            pinctrl-0 = <&tmd2772_default>;
+            pinctrl-1 = <&tmd2772_sleep>;
+            interrupts = <113 0x2002>;
+            vdd-supply = <&pm8916_l17>;
+            vio-supply = <&pm8916_l6>;
+            ams,pul_cnt = <13>;
+	    };
+		stk@48 {
+			compatible = "stk,stk3x1x";
+			reg = <0x48>;
+			interrupt-parent = <&msm_gpio>;
+			interrupts = <113 0x2002>;
+			vdd-supply = <&pm8916_l17>;
+			vio-supply = <&pm8916_l6>;
+			stk,irq-gpio = <&msm_gpio 113 0x2002>;
+			pinctrl-names = "stk3x1x_default","stk3x1x_sleep";
+			pinctrl-0 = <&stk3x1x_default>;
+			pinctrl-1 = <&stk3x1x_sleep>;
+			stk,state-reg = <0x0>;
+			stk,psctrl-reg = <0x31>;
+			stk,alsctrl-reg = <0x38>;
+			stk,ledctrl-reg = <0xFF>;
+			stk,wait-reg = <0x07>;
+			stk,ps-thdh = <1250>;
+			stk,ps-thdl = <1200>;
+			stk,transmittance = <500>;
+			stk,ps-ht-n-ct = <120>;
+			stk,ps-lt-n-ct = <80>;
+			stk,use-fir;
+		};
+	};
+};

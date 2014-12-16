@@ -1,0 +1,101 @@
+/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "msm8916-lcd-pinctrl.dtsi"
+#include "dsi-n918x-cs-panel-nt35592-720p-video.dtsi"
+#include "dsi-n918x-lianchuang-panel-nt35592-720p-video.dtsi"
+#include "dsi-n918x-success-panel-hx8392b-720p-video.dtsi"
+#include "dsi-n918x-tianma-panel-otm1285a-720p-video.dtsi"
+#include "../../dsi-panel-jdi-1080p-video.dtsi"
+
+&mdss_mdp {
+	qcom,mdss-pref-prim-intf = "dsi";
+};
+
+
+&dsi_jdi_1080_vid {
+       qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_pwm";
+       qcom,mdss-dsi-bl-pmic-pwm-frequency = <100>;
+       qcom,mdss-dsi-bl-pmic-bank-select = <0>;
+       qcom,mdss-dsi-pwm-gpio = <&pm8916_mpps 4 0>;
+       qcom,cont-splash-enabled;
+};
+
+&dsi_cs_nt35592_720_vid {
+       qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_dcs";
+       qcom,mdss-dsi-bl-pmic-pwm-frequency = <100>;
+       qcom,mdss-dsi-bl-pmic-bank-select = <0>;
+       qcom,mdss-dsi-pwm-gpio = <&pm8916_mpps 4 0>;
+       qcom,cont-splash-enabled;
+       qcom,esd-check-enabled;
+};
+
+&dsi_lianchuang_nt35592_720_vid {
+       qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_dcs";
+       qcom,mdss-dsi-bl-pmic-pwm-frequency = <100>;
+       qcom,mdss-dsi-bl-pmic-bank-select = <0>;
+       qcom,mdss-dsi-pwm-gpio = <&pm8916_mpps 4 0>;
+       qcom,cont-splash-enabled;
+       qcom,esd-check-enabled;
+};
+
+&dsi_success_hx8392b_720_vid {
+       qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_dcs";
+       qcom,mdss-dsi-bl-pmic-pwm-frequency = <100>;
+       qcom,mdss-dsi-bl-pmic-bank-select = <0>;
+       qcom,mdss-dsi-pwm-gpio = <&pm8916_mpps 4 0>;
+       qcom,cont-splash-enabled;
+       qcom,esd-check-enabled;
+};
+
+&dsi_tianma_otm1285a_720_vid {
+	qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_dcs";
+	qcom,mdss-dsi-bl-pmic-pwm-frequency = <100>;
+	qcom,mdss-dsi-bl-pmic-bank-select = <0>;
+	qcom,mdss-dsi-pwm-gpio = <&pm8916_mpps 4 0>;
+	qcom,cont-splash-enabled;
+
+	//LP11
+	qcom,mdss-dsi-hfp-power-mode;
+	qcom,mdss-dsi-hsa-power-mode;
+	qcom,mdss-dsi-hbp-power-mode;
+
+	//ESD check
+	qcom,esd-check-enabled;
+
+	//ESD check method choice and only choose one
+	qcom,mdss-dsi-panel-status-check-mode = "bta_check";
+	//qcom,mdss-dsi-panel-status-check-mode = "reg_read_zte";
+};
+
+&pmx_mdss {
+       qcom,num-grp-pins = <3>;
+       qcom,pins = <&gp 24>, <&gp 25>, <&gp 98>;
+};
+
+&pmx_mdss_te {
+       qcom,num-grp-pins = <1>;
+       qcom,pins = <&gp 24>;
+};
+
+&mdss_dsi0 {
+       qcom,dsi-pref-prim-pan = <&dsi_jdi_1080_vid>;
+       pinctrl-names = "mdss_default", "mdss_sleep";
+	   pinctrl-0 = <&mdss_te_active &mdss_reset_active>;
+	   pinctrl-1 = <&mdss_te_suspend &mdss_reset_suspend>;
+
+
+       //qcom,platform-enable-gpio = <&msm_gpio 97 0>;
+       qcom,platform-te-gpio = <&msm_gpio 24 0>;
+       qcom,platform-reset-gpio = <&msm_gpio 25 0>;
+       qcom,platform-bklight-en-gpio = <&msm_gpio 98 0>;
+};

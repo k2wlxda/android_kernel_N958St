@@ -1,0 +1,537 @@
+/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+/* move it to msm8916-mtp-N918X.dts and msm8916-mtp.dts
+#include "msm8916.dtsi"
+ */
+#include "msm8916-pinctrl.dtsi"
+
+/*move it to msm8916-mtp-N9*8X.dts by tanyijun
+#include "msm8916-camera-sensor-mtp.dtsi"
+*/
+
+//ZTEMT add by swang
+#include "msm8916-mtp-smb1360.dtsi"
+
+/ {
+	aliases {
+		serial0 = &blsp1_uart2;
+	};
+};
+
+&soc {
+	i2c@78b9000 { /* BLSP1 QUP5 */
+		/*synaptics@20 {
+			compatible = "synaptics,rmi4";
+			reg = <0x20>;
+			interrupt-parent = <&msm_gpio>;
+			interrupts = <13 0x2008>;
+			vdd-supply = <&pm8916_l17>;
+			vcc_i2c-supply = <&pm8916_l6>;
+			//pins used by touchscreen
+			pinctrl-names = "pmx_ts_active","pmx_ts_suspend";
+			pinctrl-0 = <&ts_int_active &ts_reset_active>;
+			pinctrl-1 = <&ts_int_suspend &ts_reset_suspend>;
+			synaptics,display-coords = <0 0 1079 1919>;
+			synaptics,panel-coords = <0 0 1079 2084>;
+			synaptics,irq-gpio = <&msm_gpio 13 0x2008>;
+			synaptics,reset-gpio = <&msm_gpio 12 0x0>;
+			synaptics,i2c-pull-up;
+			synaptics,power-down;
+			synaptics,disable-gpios;
+		};*/
+		synaptics_dsx_i2c@22 {
+			compatible = "synaptics_dsx_i2c,rmi4";
+			reg = <0x22>;
+			interrupt-parent = <&msm_gpio>;
+			interrupts = <13 0x2008>;
+			vdd_ana-supply = <&pm8916_l17>;
+			vcc_i2c-supply = <&pm8916_l6>;
+			pinctrl-names = "synaptics_int_default","synaptics_int_sleep";
+			pinctrl-0 = <&synaptics_int_default>;
+			pinctrl-1 = <&synaptics_int_sleep>;
+			synaptics,reset-gpio = <&msm_gpio 12 0x00>;
+			synaptics,irq-gpio = <&msm_gpio 13 0x2008>;
+			synaptics,regulator_en;
+		};
+		goodix_gt915@5d {
+			compatible = "goodix,gt915_i2c";
+			reg = <0x5d>;
+			interrupt-parent = <&msm_gpio>;
+			interrupts = <13 0x2008>;
+			vdd-supply = <&pm8916_l17>;
+			vcc_i2c-supply = <&pm8916_l6>;
+			pinctrl-names = "gt9xx_int_default","gt9xx_int_sleep";
+			pinctrl-0 = <&gt9xx_int_default>;
+			pinctrl-1 = <&gt9xx_int_sleep>;
+			goodix,reset-gpio = <&msm_gpio 12 0x00>;
+			goodix,irq-gpio = <&msm_gpio 13 0x2008>;
+		};
+		cyttsp4_i2c_adapter@24 {
+			compatible = "cypress,cyttsp4_i2c_adapter";
+			reg = <0x24>;
+			interrupt-parent = <&msm_gpio>;
+			interrupts = <13 0x2>;
+			vdd_ana-supply = <&pm8916_l17>;
+			vcc_i2c-supply = <&pm8916_l6>;
+			pinctrl-names = "cyttsp4_int_default","cyttsp4_int_sleep";
+			pinctrl-0 = <&cyttsp4_int_default>;
+			pinctrl-1 = <&cyttsp4_int_sleep>;
+			cypress,reset-gpio = <&msm_gpio 12 0x00>;
+			cypress,irq-gpio = <&msm_gpio 13 0x2008>;
+		};
+		focaltech@38 {
+			compatible = "focaltech,5x06";
+			reg = <0x38>;
+			interrupt-parent = <&msm_gpio>;
+			interrupts = <13 0x2008>;
+			vdd-supply = <&pm8916_l17>;
+			vcc_i2c-supply = <&pm8916_l6>;
+			pinctrl-names = "pmx_ts_active","pmx_ts_suspend";
+			pinctrl-0 = <&ts_int_active &ts_reset_active>;
+			pinctrl-1 = <&ts_int_suspend &ts_reset_suspend>;
+			focaltech,name = "ft5x06";
+			focaltech,family-id = <0x14>;
+			focaltech,fw-vkey-support;
+			focaltech,ignore-id-check;
+			focaltech,reset-gpio = <&msm_gpio 12 0x00>;
+			focaltech,irq-gpio = <&msm_gpio 13 0x2008>;
+			focaltech,display-coords = <0 0 720 1280>;
+			focaltech,panel-coords = <0 0 1080 2000>;
+			focaltech,button-map= <139 102 158>;
+			focaltech,no-force-update;
+			focaltech,i2c-pull-up;
+			focaltech,group-id = <1>;
+			focaltech,hard-reset-delay-ms = <20>;
+			focaltech,soft-reset-delay-ms = <150>;
+			focaltech,num-max-touches = <5>;
+			focaltech,fw-name = "ft_8226_qrd_1080p_fw.bin";
+			focaltech,fw-delay-aa-ms = <50>;
+			focaltech,fw-delay-55-ms = <30>;
+			focaltech,fw-upgrade-id1 = <0x79>;
+			focaltech,fw-upgrade-id2 = <0x03>;
+			focaltech,fw-delay-readid-ms = <10>;
+			focaltech,fw-delay-era-flsh-ms = <2000>;
+		};
+	};
+
+ 	flash_sgm3141:flashlight {
+ 		compatible = "qcom,leds-gpio-flash";
+ 		status = "okay";
+ 		pinctrl-names = "camera_flash_sgm3141_default";
+ 		pinctrl-0 = <&camera_flash_sgm3141_default>;
+ 		qcom,flash-en = <&msm_gpio 32 0>;
+ 		qcom,flash-now = <&msm_gpio 31 0>;
+ 		linux,name = "flashlight";
+ 		linux,default-trigger = "flashlight-trigger";
+ 	};
+	gen-vkeys {
+		compatible = "qcom,gen-vkeys";
+		label = "synaptics_rmi4_i2c";
+		qcom,disp-maxx = <1079>;
+		qcom,disp-maxy = <1919>;
+		qcom,panel-maxx = <1079>;
+		qcom,panel-maxy = <2084>;
+		qcom,key-codes = <158 139 172 217>;
+	};
+    
+	i2c@78ba000 { /* BLSP1 QUP6 */
+	/*
+		nfc-nci@e {
+			compatible = "qcom,nfc-nci";
+			reg = <0x0e>;
+			qcom,irq-gpio = <&msm_gpio 21 0x00>;
+			qcom,dis-gpio = <&msm_gpio 20 0x00>;
+			qcom,clk-src = "BBCLK2";
+			qcom,clk-en-gpio = <&msm_gpio 0 0x00>;
+			interrupt-parent = <&msm_gpio>;
+			interrupts = <21 0>;
+			interrupt-names = "nfc_irq";
+			pinctrl-names = "nfc_active","nfc_suspend";
+			pinctrl-0 = <&nfc_int_active &nfc_disable_active>;
+			pinctrl-1 = <&nfc_int_suspend &nfc_disable_suspend>;
+			qcom,clk-gpio = <&pm8916_gpios 2 0>;
+			clocks = <&clock_rpm clk_bb_clk2_pin>;
+			clock-names = "ref_clk";
+		};
+		*/
+		broadcom_bcm2079x_nfc@0x77 {
+			compatible = "broadcom,bcm2079x_nfc";
+			reg = <0x77>;
+			broadcom,en-gpio = <&msm_gpio 20 0x00>;
+			broadcom,wake-gpio = <&msm_gpio 21 0x00>;
+			pinctrl-names = "nfc_active","nfc_suspend";
+			pinctrl-0 = <&bcm2079x_ctl_active &bcm2079x_ctl_active>;
+			pinctrl-1 = <&bcm2079x_ctl_suspend &bcm2079x_ctl_suspend>;
+			interrupt-parent = <&spmi_bus>;
+			interrupts = <0x0 0xc2 0x0>;
+			interrupt-names = "BRCM_NFC_INT";
+			broadcom,irq-gpio = <&pm8916_gpios 3 0x00>;
+			broadcom,clk-gpio = <&pm8916_gpios 2 0x00>;	
+			clocks = <&clock_rpm clk_bb_clk2_pin>;
+			clock-names = "ref_clk";
+		};
+// ZTEMT : Moved to qcom/zte/project/msm8916-mtp-breathlight.dtsi
+     /*
+        aw9106b_led@5b {
+        	aw9106b_led,name = "aw9106b";
+            compatible = "aw,9106b";
+            reg = <0x5b>;
+            aw9106b_led,power-gpio = <&msm_gpio 17 0x00>;
+            pinctrl-names = "aw9106b_active","aw9106b_suspend";
+			pinctrl-0 = <&aw9106b_ctl_active>;
+			pinctrl-1 = <&aw9106b_ctl_suspend>;
+      };	
+     */
+	};
+
+	 i2c@78b8000 { /* BLSP1 QUP4   */
+               lc709203f@0x0b{ /* battery monitor fuel gauge lc709203f*/
+                       compatible = "on,lc709203f";
+                       reg = <0x0b>;
+                       interrupt-parent = <&msm_gpio>;
+                       interrupts = <51 8>;
+                       interrupt-names = "lc709203f_irq";
+                       pinctrl-names = "default";
+                       pinctrl-0 = <&lc709203f_int_default>;
+                       //regulator-name = "lc709203f_reg";
+                       qcom,lc709203f-irq = <&msm_gpio 51 0x01>;                      
+                       qcom,voltage-low-threshold = <3420>;
+                       qcom,soc-low-threshold = <0>;
+                       qcom,low-soc-calculate-soc-threshold = <15>;
+                       qcom,low-voltage-calculate-soc-ms = <1000>;
+                       qcom,low-soc-calculate-soc-ms = <5000>;
+                       qcom,calculate-soc-ms = <20000>;
+			  qcom,resume-soc = <99>;
+			   
+                };
+			   /*
+				CONFIG_ZTEMT_BQ24296_CHARGE
+				*/
+				bq24296_supply: bq24296-chg@6B {
+						compatible = "ti,bq24296-chg";
+						reg = <0x6B>;
+						interrupt-parent = <&msm_gpio>;
+						pinctrl-names = "active", "suspend";
+						pinctrl-0 = <&bq24295_int_default_active>;
+						pinctrl-1 = <&bq24295_int_default_suspend >;
+						bq24296,ce-gpio = <&msm_gpio 11 0x01>;  
+						regulator-name = "bq24296_otg_vreg";
+						
+						qcom,bq24296-vadc = <&pm8916_vadc>;
+			     qcom,bq24296-adc_tm = <&pm8916_adc_tm>;
+			     
+						bq24296,maxinput-chg-mv = <4360>;  
+						bq24296,maxinput-chg-ma = <500>;  
+						bq24296,v-cutoff-mv = <3500>;  
+						/*1.5A*/
+						bq24296,ibatmax-ma = <1536>;  
+						bq24296,ibatterm-ma = <128>;  
+						bq24296,ibattprechg-ma = <256>;  
+						bq24296,max-voltage-mv = <4368>;  
+						bq24296,watchdog-reset-ms = <160000>;  
+						bq24296,max-charger-cycle-mins = <720>;  
+						bq24296,boost-output-chg-mv = <4998>;  
+						bq24296,boost-hot-temp-threshold = <55>;  
+						bq24296,boost-cold-temp-threshold = <0>;  
+		  			bq24296,thermal_regulation-threshold = <120>;  
+				};
+		//add by swang  ZTEMT_BQ24158_CHARGE
+		bq24158_supply: bq24158_i2c_adapter@6a {
+			compatible = "ti,bq24158";
+			reg = <0x6a>;
+			interrupt-parent = <&msm_gpio>;
+			bq24158-irq-gpio = <&msm_gpio 62 0x00>;
+			pinctrl-names = "active", "suspend";
+			pinctrl-0 = <&bq24158_ce_default>;
+			pinctrl-1 = <&bq24158_ce_suspend>;
+			bq24158,ce-gpio = <&msm_gpio 10 0x01>;
+			regulator-name = "bq24158_otg_vreg";
+			qcom,bq24158-vadc = <&pm8916_vadc>;
+			qcom,bq24158-adc_tm = <&pm8916_adc_tm>;
+			bq-ibatmax-ma = <1100>;
+			bq-vusb-min = <4500>;
+			bq-initusb-ma = <0>;
+			bq-iterm-ma = <128>;
+			bq-vbatmax-mv = <4352>;
+			bq-charge-sense = <68>;
+		};
+     };
+
+	sound {
+		compatible = "qcom,msm8x16-audio-codec";
+		qcom,model = "msm8x16-snd-card-mtp";
+		qcom,msm-snd-card-id = <0>;
+		qcom,msm-codec-type = "internal";
+		qcom,msm-ext-pa = "primary";
+		qcom,msm-mclk-freq = <9600000>;
+		qcom,msm-mbhc-hphl-swh = <1>;
+		qcom,msm-mbhc-gnd-swh = <0>;
+		qcom,msm-hs-micbias-type = "internal";
+		qcom,audio-routing =
+			"RX_BIAS", "MCLK",
+			"SPK_RX_BIAS", "MCLK",
+			"INT_LDO_H", "MCLK",
+			"MIC BIAS External", "Handset Mic",
+			"MIC BIAS Internal2", "Headset Mic",
+			"MIC BIAS External", "Secondary Mic",
+			"AMIC1", "MIC BIAS External",
+			"AMIC2", "MIC BIAS Internal2",
+			"AMIC3", "MIC BIAS External";
+		pinctrl-names = "cdc_lines_act",
+				"cdc_lines_sus",
+				"cdc_lines_sec_ext_act",
+				"cdc_lines_sec_ext_sus",
+				"cross_conn_det_act",
+				"cross_conn_det_sus";
+		pinctrl-0 = <&cdc_pdm_lines_act>;
+		pinctrl-1 = <&cdc_pdm_lines_sus>;
+		pinctrl-2 = <&cdc_pdm_lines_act &cdc_ext_pa_act
+						&cdc_ext_pa_ws_act>;
+		pinctrl-3 = <&cdc_pdm_lines_sus &cdc_ext_pa_sus
+						&cdc_ext_pa_ws_sus>;
+		pinctrl-4 = <&cross_conn_det_act>;
+		pinctrl-5 = <&cross_conn_det_sus>;
+		qcom,cdc-us-euro-gpios = <&msm_gpio 20 0>;
+	};
+};
+
+&blsp1_uart2 {
+	status = "ok";
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart_console_sleep>;
+};
+
+
+&blsp1_uart1 {
+	status = "ok";
+};
+
+&sdhc_1 {
+	vdd-supply = <&pm8916_l8>;
+	qcom,vdd-voltage-level = <2900000 2900000>;
+	qcom,vdd-current-level = <200 400000>;
+
+	vdd-io-supply = <&pm8916_l5>;
+	qcom,vdd-io-always-on;
+	qcom,vdd-io-lpm-sup;
+	qcom,vdd-io-voltage-level = <1800000 1800000>;
+	qcom,vdd-io-current-level = <200 60000>;
+
+	pinctrl-names = "active", "sleep";
+	pinctrl-0 = <&sdc1_clk_on &sdc1_cmd_on &sdc1_data_on>;
+	pinctrl-1 = <&sdc1_clk_off &sdc1_cmd_off &sdc1_data_off>;
+
+	qcom,nonremovable;
+
+	status = "ok";
+};
+
+/* ZTEMT: sdhc_2 is moved to ./zte */
+/*
+&sdhc_2 {
+	vdd-supply = <&pm8916_l11>;
+	qcom,vdd-voltage-level = <2800000 2950000>;
+	qcom,vdd-current-level = <15000 400000>;
+
+	vdd-io-supply = <&pm8916_l12>;
+	qcom,vdd-io-voltage-level = <1800000 2950000>;
+	qcom,vdd-io-current-level = <200 50000>;
+
+	pinctrl-names = "active", "sleep";
+	pinctrl-0 = <&sdc2_clk_on &sdc2_cmd_on &sdc2_data_on &sdc2_cd_on>;
+	pinctrl-1 = <&sdc2_clk_off &sdc2_cmd_off &sdc2_data_off &sdc2_cd_off>;
+
+	#address-cells = <0>;
+	interrupt-parent = <&sdhc_2>;
+	interrupts = <0 1 2>;
+	#interrupt-cells = <1>;
+	interrupt-map-mask = <0xffffffff>;
+	interrupt-map = <0 &intc 0 125 0
+			1 &intc 0 221 0
+			2 &msm_gpio 38 0>;
+	interrupt-names = "hc_irq", "pwr_irq", "status_irq";
+	cd-gpios = <&msm_gpio 38 0x1>;
+
+	status = "ok";
+};
+*/
+
+&pm8916_mpps {
+	mpp@a000 { /* MPP 1 */
+		/* VDD_PX */
+		status = "disabled";
+	};
+
+	mpp@a100 { /* MPP 2 */
+		/* HR LED */
+		status = "disabled";
+	};
+
+	mpp@a200 { /* MPP 3 */
+		/* VREF DAC */
+		status = "disabled";
+	};
+
+	mpp@a300 { /* MPP 4 */
+		/* Backlight PWM */
+		qcom,mode = <1>;		/* Digital output */
+		qcom,invert = <0>;		/* Disable invert */
+		qcom,src-sel = <4>;		/* DTEST1 */
+		qcom,vin-sel = <0>;		/* VPH_PWR */
+		qcom,master-en = <1>;		/* Enable MPP */
+	};
+};
+
+&pm8916_gpios {
+	gpio@c000 { /* GPIO 1 */
+		/* Battery UICC Alarm */
+		status = "disabled";
+	};
+
+	gpio@c100 { /* GPIO 2 */
+		/* NFC_CLK_REQ */
+
+
+
+		reg = <0xc100 0x100>;
+		qcom,pin-num = <2>;
+		qcom,mode = <0>;                    
+		qcom,output-type = <0>;             
+		qcom,invert = <0>;                  
+		qcom,pull = <5>;                    
+		qcom,vin-sel = <2>;                
+		qcom,src-sel = <2>;                 
+		qcom,master-en = <1>;
+		
+		/*qcom,mode = <0>;  QPNP_PIN_MODE_DIG_IN */
+		/*qcom,pull = <5>;  QPNP_PIN_PULL_NO */
+		/*qcom,vin-sel = <2>;  QPNP_PIN_VIN2 */
+		/*qcom,src-sel = <2>;  QPNP_PIN_SEL_FUNC_1 */
+		/*qcom,master-en = <1>;*/
+	};
+
+	gpio@c200 { /* GPIO 3 */
+		/* External regulator control for WTR */
+		reg = <0xc200 0x100>;
+		qcom,pin-num = <3>;
+		qcom,mode = <0>;                              
+		qcom,output-type = <0>;                       
+		qcom,invert = <0>;                            
+		qcom,pull = <5>;                              
+		qcom,vin-sel = <2>;                           
+		qcom,src-sel = <0>;                           
+		qcom,master-en = <1>; 
+		status = "ok";
+	};
+
+	gpio@c300 { /* GPIO 4 */
+		/* External regulator control for APC */
+		status = "disabled";
+	};
+};
+
+
+&pm8916_chg {
+	status = "ok";
+	//ZTEMT swang enable qpnp linear charger
+	//qcom,charging-disabled;
+};
+
+/ {
+	mtp_batterydata: qcom,battery-data {
+		qcom,rpull-up-kohm = <100>;
+		qcom,vref-batt-therm = <1800000>;
+
+		#include "batterydata-palladium.dtsi"
+		//ZTEMT add by swang
+		#include "zte/N918X/batterydata-ztemt-4v35-2400mah.dtsi"
+	};
+};
+
+&pm8916_bms {
+	status = "ok";
+	qcom,battery-data = <&mtp_batterydata>;
+};
+
+&spmi_bus {
+	qcom,pm8916@0 {
+		qcom,leds@a100 {
+			status = "okay";
+			qcom,led_mpp_2 {
+				label = "mpp";
+				linux,name = "button-backlight";
+				linux,default-trigger = "none";
+				qcom,default-state = "off";
+				qcom,max-current = <40>;
+				qcom,current-setting = <5>;
+				qcom,id = <6>;
+				qcom,mode = "manual";
+				qcom,source-sel = <1>;
+				qcom,mode-ctrl = <0x60>;
+			};
+		};
+	};
+};
+
+&qcom_tzlog {
+	status = "okay";
+};
+
+&qcom_rng {
+	status = "okay";
+};
+
+&qcom_crypto {
+	status = "okay";
+};
+
+&qcom_cedev {
+	status = "okay";
+};
+
+&qcom_seecom {
+	status = "okay";
+};
+
+/* CoreSight */
+&tpiu {
+      pinctrl-names = "sdcard", "trace", "swduart",
+		      "swdtrc", "jtag", "spmi";
+       /* NIDnT */
+      pinctrl-0 = <&qdsd_clk_sdcard &qdsd_cmd_sdcard
+                  &qdsd_data0_sdcard &qdsd_data1_sdcard
+                  &qdsd_data2_sdcard &qdsd_data3_sdcard>;
+      pinctrl-1 = <&qdsd_clk_trace &qdsd_cmd_trace
+                  &qdsd_data0_trace &qdsd_data1_trace
+                  &qdsd_data2_trace &qdsd_data3_trace>;
+      pinctrl-2 = <&qdsd_cmd_swduart &qdsd_data0_swduart
+                  &qdsd_data1_swduart &qdsd_data2_swduart
+                  &qdsd_data3_swduart>;
+      pinctrl-3 = <&qdsd_clk_swdtrc &qdsd_cmd_swdtrc
+                  &qdsd_data0_swdtrc &qdsd_data1_swdtrc
+                  &qdsd_data2_swdtrc &qdsd_data3_swdtrc>;
+      pinctrl-4 = <&qdsd_cmd_jtag &qdsd_data0_jtag
+                  &qdsd_data1_jtag &qdsd_data2_jtag
+                  &qdsd_data3_jtag>;
+      pinctrl-5 = <&qdsd_clk_spmi &qdsd_cmd_spmi
+                  &qdsd_data0_spmi &qdsd_data3_spmi>;
+};
+
+&spmi_bus {
+	qcom,pm8916@1 {
+		qcom,vibrator@c000 {
+			status = "okay";
+			qcom,vib-timeout-ms = <15000>;
+			qcom,vib-vtg-level-mV = <3000>;
+		};
+	};
+};
