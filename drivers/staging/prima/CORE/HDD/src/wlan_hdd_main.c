@@ -7719,6 +7719,117 @@ free_hdd_ctx:
    hdd_set_ssr_required (VOS_FALSE);
 }
 
+/* wangxun */
+static VOS_STATUS hdd_update_wifi_mac(hdd_context_t* pHddCtx)
+{
+	struct file *fp      = NULL;
+	char* filepath       = "/persist/softmac";
+	char macbuf[20]      ={0};
+	int ret              = 0;
+	mm_segment_t oldfs   = {0};
+	char random_mac[20]  = {0};
+	unsigned int softmac[6];
+
+	// first output random wifi mac address.
+	random_mac[0] = 0x00; /* locally administered */
+	random_mac[1] = 0x23;
+	random_mac[2] = 0xB1;
+	random_mac[3] = 0x11;//random32() & 0xff;
+	random_mac[4] = 0x22;//random32() & 0xff;
+	random_mac[5] = 0x33;//random32() & 0xff;
+		
+	fp = filp_open(filepath, O_RDWR, 0666);
+	if(IS_ERR(fp)) {
+		printk("[WIFI] %s: File open error\n", filepath);
+		return VOS_STATUS_E_FAILURE;
+	}
+	
+	oldfs = get_fs();
+	set_fs(get_ds());    
+
+	if(fp->f_mode & FMODE_READ) {
+		ret = fp->f_op->read(fp, (char *)macbuf, 17, &fp->f_pos);
+		if(ret < 0)
+			printk("[WIFI] Mac address [%s] Failed to read from File: %s\n", macbuf, filepath);
+		else
+			printk("[WIFI] Mac address [%s] read from File: %s\n", macbuf, filepath);
+	}
+	
+	set_fs(oldfs);
+
+	if (fp)
+	    filp_close(fp, NULL);
+		
+	if (sscanf(macbuf, "%02x:%02x:%02x:%02x:%02x:%02x",
+								&softmac[0], &softmac[1], &softmac[2],
+								&softmac[3], &softmac[4], &softmac[5])==6) 
+	{
+		if (memcmp(macbuf, "00:00:00:00:00:00", 17) != 0){
+			int i;
+			for (i = 0; i < 6; i++)
+			{
+			   pHddCtx->cfg_ini->intfMacAddr[0].bytes[i]= softmac[i] & 0xff;
+			}
+	        printk("wifi mac is =%02X:%02X:%02X:%02X:%02X:%02X\n",
+	            pHddCtx->cfg_ini->intfMacAddr[0].bytes[0], 
+	            pHddCtx->cfg_ini->intfMacAddr[0].bytes[1],
+	            pHddCtx->cfg_ini->intfMacAddr[0].bytes[2], 
+	            pHddCtx->cfg_ini->intfMacAddr[0].bytes[3], 
+	            pHddCtx->cfg_ini->intfMacAddr[0].bytes[4], 
+	            pHddCtx->cfg_ini->intfMacAddr[0].bytes[5]);
+		}else{		 
+			struct file *fp      = NULL;
+			char mac_in[20]      ={0};
+			int ret              = 0;
+			mm_segment_t oldfs   = {0};
+			printk("wxun: has softmac file but mac address is invalid(00:00:00:00:00:00), so write random mac address to softmac file.\n");
+			fp = filp_open(filepath, O_RDWR | O_CREAT, 0666);
+	    	if(IS_ERR(fp)) {
+	    		printk("[WIFI] %s: File open error\n", filepath);
+	    		return VOS_STATUS_E_FAILURE;
+	    	}
+	    	
+			oldfs = get_fs();
+			set_fs(get_ds());
+	        
+	        printk("random_mac is =%02X:%02X:%02X:%02X:%02X:%02X\n",
+	            random_mac[0], random_mac[1],random_mac[2], random_mac[3], random_mac[4], random_mac[5]);
+
+	    	if(fp->f_mode & FMODE_WRITE) {			
+			sprintf(mac_in,"%02x:%02x:%02x:%02x:%02x:%02x",
+	                     random_mac[0], random_mac[1], random_mac[2],
+	                     random_mac[3], random_mac[4], random_mac[5]);
+	    		ret = fp->f_op->write(fp, (const char *)mac_in, 17, &fp->f_pos);
+	    		if(ret < 0)
+	    			printk("[WIFI] Mac address [%s] Failed to write into File: %s\n", mac_in, filepath);
+	    		else
+	    			printk("[WIFI] Mac address [%s] written into File: %s\n", mac_in, filepath);
+	    	}
+	    	
+			set_fs(oldfs);
+
+			if (fp)
+			    filp_close(fp, NULL);
+
+			if (sscanf(mac_in, "%02x:%02x:%02x:%02x:%02x:%02x",
+								&softmac[0], &softmac[1], &softmac[2],
+								&softmac[3], &softmac[4], &softmac[5])==6) 
+			{
+				int i;
+				for (i = 0; i < 6; i++)
+				{
+				   pHddCtx->cfg_ini->intfMacAddr[0].bytes[i]= softmac[i] & 0xff;
+				}				
+			}
+				
+	    }
+	}
+
+	return VOS_STATUS_SUCCESS;
+	
+}
+
+/* end */
 
 /**---------------------------------------------------------------------------
 
@@ -8141,7 +8252,9 @@ int hdd_wlan_startup(struct device *dev )
 #endif
    int ret;
    struct wiphy *wiphy;
+   #if 0
    v_MACADDR_t mac_addr;
+   #endif//don't use qualcomm mac address.
 
    ENTER();
    /*
@@ -8445,6 +8558,7 @@ int hdd_wlan_startup(struct device *dev )
       goto err_vosclose;
    }
 
+#if 0//remove by wangxun
    // Get mac addr from platform driver
    ret = wcnss_get_wlan_mac_address((char*)&mac_addr.bytes);
 
@@ -8469,7 +8583,9 @@ int hdd_wlan_startup(struct device *dev )
                 "using MAC from ini file ", __func__);
       }
    }
-   else if (VOS_STATUS_SUCCESS != hdd_update_config_from_nv(pHddCtx))
+   else 
+#endif
+if (VOS_STATUS_SUCCESS != hdd_update_wifi_mac(pHddCtx))
    {
       // Apply the NV to cfg.dat
       /* Prima Update MAC address only at here */
