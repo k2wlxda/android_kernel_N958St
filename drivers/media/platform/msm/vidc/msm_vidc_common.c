@@ -3521,6 +3521,14 @@ int msm_vidc_check_session_supported(struct msm_vidc_inst *inst)
 	capability = &inst->capability;
 	hdev = inst->core->device;
 	rc = msm_vidc_load_supported(inst);
+	if (rc) {
+		change_inst_state(inst, MSM_VIDC_CORE_INVALID);
+		msm_vidc_queue_v4l2_event(inst,
+					V4L2_EVENT_MSM_VIDC_HW_UNSUPPORTED);
+		dprintk(VIDC_ERR,
+			"%s: Resolution unsupported\n", __func__);
+		return rc;
+	}
 	if (!rc && inst->capability.capability_set) {
 		if (inst->prop.width[CAPTURE_PORT] < capability->width.min ||
 			inst->prop.height[CAPTURE_PORT] <
