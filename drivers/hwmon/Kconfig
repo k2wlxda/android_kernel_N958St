@@ -101,6 +101,11 @@ config SENSORS_AD7414
 	  This driver can also be built as a module. If so, the module
 	  will be called ad7414.
 
+config ZTEMT_LIQUID_LED
+	tristate "aw9106b i2c led"
+    depends on I2C
+	help
+	  If you say use aw9106b, select it.
 config SENSORS_AD7418
 	tristate "Analog Devices AD7416, AD7417 and AD7418"
 	depends on I2C
@@ -1565,6 +1570,82 @@ config SENSORS_MC13783_ADC
         depends on MFD_MC13XXX
         help
           Support for the A/D converter on MC13783 and MC13892 PMIC.
+
+config ZTEMT_BREATH_LED_N958X
+	tristate "N958X'S Breathlight"
+	depends on ZTEMT_LIQUID_LED
+	help
+	  Say Y here if you are using the out4 as the output pin in aw9106.
+################################################# SENROS START
+menuconfig ZTEMT_SENSORS
+	tristate "ZTEMT ZTEMT_SENSORS"
+	default n
+
+if ZTEMT_SENSORS
+
+	config FEATURE_ZTEMT_SENSORS_LOG_ON
+	tristate "ZTEMT SENSORS LOG ON"
+	depends on ZTEMT_SENSORS
+	default n
+	help
+		If you want to enable the sensor log,
+		then choose this config
+
+################################################# COMPASS START
+menuconfig ZTEMT_SENSORS_COMPASS
+	tristate "ZTEMT COMPASS"
+	default n
+
+config ZTEMT_SENSORS_COMPASS_AKM09911
+	tristate "AKM09911"
+	depends on ZTEMT_SENSORS_COMPASS
+	help
+	  If you say yes here you get support for AKM's
+	  compass AKM09911
+################################################# COMPASS END
+
+################################################# ALS_PS START
+menuconfig ZTEMT_SENSORS_ALS_PS
+	tristate "ZTEMT ALS and PS"
+	default n
+
+if ZTEMT_SENSORS_ALS_PS
+
+    config ZTEMT_SENSORS_ALS_PS_TMD2772
+	tristate "TMD2772 device driver"
+	depends on ZTEMT_SENSORS_ALS_PS
+	help
+	  If you say yes here you get support for AMS's
+	  als ps TMD2772
+
+    config ZTEMT_SENSORS_ALS_PS_STK3X1X
+    tristate "STK3X1X device driver"
+	depends on ZTEMT_SENSORS_ALS_PS
+	default n
+	help
+	  Support for stk3x1x
+
+endif
+################################################# ALS_PS END
+
+################################################# HALL START
+	menuconfig ZTEMT_SENSORS_HALL
+		tristate "ZTEMT HALL"
+		default n
+
+	if ZTEMT_SENSORS_HALL
+
+	    config ZTEMT_SENSORS_HALL_DEVICE_SIGNLE_OUT
+		tristate "hall device single out driver"
+		depends on ZTEMT_SENSORS_HALL
+		help
+		  If you say yes here you get support for
+		  hall device with single out
+	endif
+################################################# HALL END
+
+endif
+################################################# SENROS END
 
 if ACPI
 

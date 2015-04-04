@@ -14,6 +14,12 @@ config POWER_SUPPLY_DEBUG
 	  Say Y here to enable debugging messages for power supply class
 	  and drivers.
 
+config ZTEMT_POWER_DEBUG
+	bool "ZTEMT Power Debug Feature"
+	default y
+	help
+	  ZTEMT Power Debug Feature
+
 config PDA_POWER
 	tristate "Generic PDA/phone power driver"
 	depends on !S390
@@ -515,6 +521,66 @@ config QPNP_LINEAR_CHARGER
 	  Say Y here to enable the Linear battery charger which supports USB
 	  detection and charging. The driver also offers relevant information
 	  to userspace via the power supply framework.
+
+################ZTEMT charger
+menu "ZTEMT charger and battery"
+config ZTEMT_COMM_CHARGE
+	bool "ZTEMT comm  Charge"
+	default n
+	help
+	  ZTEMT comm  Charge 
+
+config ZTEMT_PM8916_BMS
+	bool "ZTEMT pm vm bms"
+	default n
+	help
+	  ZTEMT pm vm-bms
+
+config ZTEMT_CHARGE_PMIC_SMB
+	bool " ZTEMT support pmic and smb charger"
+	default y
+	help
+	  support ZTEMT pmic and smb charger
+
+config ZTEMT_BQ24296_CHARGE
+	bool "ZTEMT BQ24296 Charge"
+	default n
+	help
+	  ZTEMT BQ24296 Charge
+
+config ZTEMT_BATTERY_MONITOR
+	bool "ZTEMT Battery Monitor"
+	default n
+	help
+	  ZTEMT Battery Monitor
+	  
+config ZTEMT_CHARGE_N918X
+	bool " ZTEMT support charger feature for N918X"
+	default  n
+	help
+	  ZTEMT support charger feature for N918X
+
+config ZTEMT_CHAGER_MONITOR
+	bool " ZTEMT charger monitor work"
+	default  n
+	help
+	  ZTEMT charger monitor work
+	  
+config ZTEMT_BATTERY_FG_LC709203F
+	bool " ZTEMT support feul gauge lc709203f"
+	default n
+	help
+	   Say Y here to support ZTEMT feul gauge lc709203f
+
+config ZTEMT_BQ24158_CHARGE
+	bool "ZTEMT BQ24158 Charge"
+	default n
+	help
+	  ZTEMT BQ24158 Charge
+	   
+endmenu
+
+################ztemt battery config
 
 source "drivers/power/reset/Kconfig"
 

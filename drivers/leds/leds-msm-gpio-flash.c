@@ -112,8 +112,14 @@ int led_gpio_flash_probe(struct platform_device *pdev)
 		return PTR_ERR(flash_led->pinctrl);
 	}
 
-	flash_led->gpio_state_default = pinctrl_lookup_state(flash_led->pinctrl,
+#ifdef CONFIG_CAMERA_FLASH_SGM3141
+        flash_led->gpio_state_default = pinctrl_lookup_state(flash_led->pinctrl,
+ 		"camera_flash_sgm3141_default");
+#else
+	 flash_led->gpio_state_default = pinctrl_lookup_state(flash_led->pinctrl,
 		"ocp8110_default");
+#endif	
+
 	if (IS_ERR(flash_led->gpio_state_default)) {
 		pr_err("%s:can not get active pinstate\n", __func__);
 		return -EINVAL;

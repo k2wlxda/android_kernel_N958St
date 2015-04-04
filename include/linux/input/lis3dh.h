@@ -37,7 +37,10 @@
 #define LIS3DH_ACC_I2C_SAD_L	((LIS3DH_ACC_I2C_SADROOT<<1)|SAD0L)
 #define LIS3DH_ACC_I2C_SAD_H	((LIS3DH_ACC_I2C_SADROOT<<1)|SAD0H)
 #define	LIS3DH_ACC_DEV_NAME	"lis3dh_acc"
-#define ACCEL_INPUT_DEV_NAME	"accelerometer"
+//#define ACCEL_INPUT_DEV_NAME	"accelerometer"
+#define ACCEL_SYSCLS_NAME		"acc"
+#define ACCEL_SYSDEV_NAME		"acc"
+#define ACCEL_INPUT_DEV_NAME	"accel"
 
 /************************************************/
 /*	Accelerometer defines section		*/
@@ -53,8 +56,10 @@
 
 #ifdef	__KERNEL__
 struct lis3dh_acc_platform_data {
-	int poll_interval;
-	int min_interval;
+	//int poll_interval;
+	//int min_interval;
+	unsigned int poll_interval;
+    unsigned int min_interval;
 
 	u8 g_range;
 

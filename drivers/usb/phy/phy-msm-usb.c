@@ -74,6 +74,10 @@
 
 #define USB_SUSPEND_DELAY_TIME	(500 * HZ/1000) /* 500 msec */
 
+#ifdef CONFIG_ZTEMT_BQ24158_CHARGE
+#include <../../power/bq24158_charger.h>
+#endif
+
 enum msm_otg_phy_reg_mode {
 	USB_PHY_REG_OFF,
 	USB_PHY_REG_ON,
@@ -90,8 +94,13 @@ unsigned int lpm_disconnect_thresh = 1000;
 module_param(lpm_disconnect_thresh , uint, S_IRUGO | S_IWUSR);
 MODULE_PARM_DESC(lpm_disconnect_thresh,
 	"Delay before entering LPM on USB disconnect");
-
+#if defined(CONFIG_ZTEMT_COMM_CHARGE)    \
+ || defined(CONFIG_ZTEMT_BQ24296_CHARGE) \
+ || defined(CONFIG_ZTEMT_BQ24158_CHARGE)
+static bool floated_charger_enable = 1;
+#else
 static bool floated_charger_enable;
+#endif
 module_param(floated_charger_enable , bool, S_IRUGO | S_IWUSR);
 MODULE_PARM_DESC(floated_charger_enable,
 	"Whether to enable floated charger");
@@ -883,6 +892,7 @@ static void msm_otg_bus_vote(struct msm_otg *motg, enum usb_bus_vote vote)
 #define PHY_RESUME_TIMEOUT_USEC	(100 * 1000)
 
 #ifdef CONFIG_PM_SLEEP
+extern int Ft5x0x_ts_notifier_call_chain(unsigned long val);
 static int msm_otg_suspend(struct msm_otg *motg)
 {
 	struct usb_phy *phy = &motg->phy;
@@ -1158,6 +1168,12 @@ phcd_retry:
 	wake_unlock(&motg->wlock);
 
 	dev_info(phy->dev, "USB in low power mode\n");
+	
+//+++duguowei
+#ifdef CONFIG_ZTEMT_TOUCHSCREEN_FT5336//CONFIG_TOUCHSCREEN_FT5X06
+		Ft5x0x_ts_notifier_call_chain(0);
+#endif
+//---duguowei
 
 	return 0;
 }
@@ -1345,6 +1361,12 @@ skip_phy_resume:
 		usb_hcd_resume_root_hub(hcd);
 
 	dev_info(phy->dev, "USB exited from low power mode\n");
+
+//+++duguowei
+#ifdef CONFIG_ZTEMT_TOUCHSCREEN_FT5336//CONFIG_TOUCHSCREEN_FT5X06
+		Ft5x0x_ts_notifier_call_chain(1);
+#endif
+//---duguowei
 
 	return 0;
 }
@@ -2546,6 +2568,10 @@ static void msm_chg_detect_work(struct work_struct *w)
 		dev_dbg(phy->dev, "chg_type = %s\n",
 			chg_to_string(motg->chg_type));
 		queue_work(system_nrt_wq, &motg->sm_work);
+
+		#ifdef CONFIG_ZTEMT_BQ24158_CHARGE
+		bq24158_notify_charger(motg->chg_type);
+		#endif
 		return;
 	default:
 		return;
@@ -2756,8 +2782,12 @@ static void msm_otg_sm_work(struct work_struct *w)
 					pm_runtime_put_sync(otg->phy->dev);
 					break;
 				case USB_FLOATED_CHARGER:
+					#if (defined CONFIG_ZTEMT_COMM_CHARGE) || (defined CONFIG_ZTEMT_BQ24296_CHARGE)
+					msm_otg_notify_charger(motg,500);
+					#else
 					msm_otg_notify_charger(motg,
 							IDEV_CHG_MAX);
+					#endif
 					pm_runtime_put_noidle(otg->phy->dev);
 					pm_runtime_suspend(otg->phy->dev);
 					break;
@@ -3499,11 +3529,16 @@ static void msm_otg_set_vbus_state(int online)
 
 	if (!init) {
 		init = true;
+		if (pmic_vbus_init.done &&
+				test_bit(B_SESS_VLD, &motg->inputs)) {
+			pr_debug("PMIC: BSV came late\n");
+			goto out;
+		}
 		complete(&pmic_vbus_init);
 		pr_debug("PMIC: BSV init complete\n");
 		return;
 	}
-
+out:
 	if (test_bit(MHL, &motg->inputs) ||
 			mhl_det_in_progress) {
 		pr_debug("PMIC: BSV interrupt ignored in MHL\n");
@@ -3942,6 +3977,9 @@ static int otg_power_property_is_writeable_usb(struct power_supply *psy,
 
 static char *otg_pm_power_supplied_to[] = {
 	"battery",
+   #ifdef CONFIG_ZTEMT_BQ24296_CHARGE
+   "bq24296-battery",
+	 #endif
 };
 
 static enum power_supply_property otg_pm_power_props_usb[] = {

@@ -26,7 +26,7 @@
 #include <linux/workqueue.h>
 #include <linux/freezer.h>
 
-#define ALARM_DELTA 120
+#define ALARM_DELTA 60
 
 /**
  * struct alarm_base - Alarm timer bases
@@ -84,6 +84,25 @@ void set_power_on_alarm(long secs, bool enable)
 	rtc_read_time(rtcdev, &rtc_time);
 	getnstimeofday(&wall_time);
 	rtc_tm_to_time(&rtc_time, &rtc_secs);
+    if((power_on_alarm-rtc_secs)<(2*365*8*24*3600L)&&power_on_alarm>rtc_secs)
+    	{
+		alarm_time = power_on_alarm - ALARM_DELTA;
+		if (alarm_time <= rtc_secs)
+				goto disable_alarm;
+		
+		rtc_time_to_tm(alarm_time, &alarm.time);
+		alarm.enabled = 1;
+		rc = rtc_set_alarm(rtcdev, &alarm);
+		
+		if (rc)
+			goto disable_alarm;
+		
+		mutex_unlock(&power_on_alarm_lock);
+
+		
+		return ;
+	}else{
+	
 	alarm_delta = wall_time.tv_sec - rtc_secs;
 	alarm_time = power_on_alarm - alarm_delta;
 
@@ -105,7 +124,7 @@ void set_power_on_alarm(long secs, bool enable)
 
 	mutex_unlock(&power_on_alarm_lock);
 	return;
-
+}
 disable_alarm:
 	power_on_alarm = 0;
 	rtc_alarm_irq_enable(rtcdev, 0);

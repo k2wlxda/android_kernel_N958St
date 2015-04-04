@@ -217,6 +217,44 @@ config SENSORS_LIS3DH
 	  To compile this driver as a module, choose M here: the
 	  module will be called lis3dh_acc.
 
+menuconfig INPUT_LSM6DX0
+    tristate "STMicroelectronics LSM6DS0 and LSM6DL0"
+	depends on I2C
+	help
+		Say Y here to enable STMicroelectronics LSM6DS0 or LSM6DL0inertial module.
+
+		To compile this driver as a module, choose M here: the
+		module will be called lsm6dx0.
+
+if INPUT_LSM6DX0
+
+	choice
+	    prompt "LSM6DS0 or LSM6DL0"
+		default INPUT_LSM6DX0_S_MODEL
+
+	config INPUT_LSM6DX0_S_MODEL
+	    boolean "LSM6DS0"
+		depends on INPUT_LSM6DX0
+		help
+		    Select this to enable the LSM6DS0 model to be supported.
+	config INPUT_LSM6DX0_L_MODEL
+	    boolean "LSM6DL0"
+		depends on INPUT_LSM6DX0
+		select INPUT_LSM6DX0_LP
+		help
+		    Select this to enable the LSM6DS0 model to be supported. 
+    endchoice
+
+	config INPUT_LSM6DX0_SW_COMP
+	    bool "STMicroelectronics LSM6DS0 Software temperature compensation"
+	    help
+		    Say Y here to enable software temperature compensation and disable hardware one.
+	config INPUT_LSM6DX0_LP
+	    bool "STMicroelectronics LSM6DS0 Enable Gyroscpe Low Power mode"
+		help
+		    Say Y here to enable Low Power mode. 
+endif
+
 config INPUT_APANEL
 	tristate "Fujitsu Lifebook Application Panel buttons"
 	depends on X86 && I2C && LEDS_CLASS

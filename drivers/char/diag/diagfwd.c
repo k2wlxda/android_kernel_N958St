@@ -1621,10 +1621,39 @@ int diag_process_apps_pkt(unsigned char *buf, int len)
 		encode_rsp_and_send(0);
 		msleep(5000);
 		/* call download API */
+		msm_set_download_mode(1);
 		msm_set_restart_mode(RESTART_DLOAD);
 		printk(KERN_CRIT "diag: download mode set, Rebooting SoC..\n");
 		kernel_restart(NULL);
 		/* Not required, represents that command isnt sent to modem */
+		return 0;
+	}
+	 /* Check for edl command */
+	else if ((cpu_is_msm8x60() || chk_apps_master()) && (*buf == 0x4B)
+			&&(*(buf+1) == 0x65)
+			&&(*(buf+2) == 0x01)
+			&&(*(buf+3) == 0x00)) {
+		/* send response back */
+		//driver->apps_rsp_buf[0] = *buf;
+		memcpy(driver->apps_rsp_buf, buf, 4);
+		encode_rsp_and_send(4);
+		msleep(5000);
+		printk(KERN_EMERG "diag: edl mode set, Rebooting SoC..\n");
+		kernel_restart("edl");
+		return 0;
+	}
+	/* Check for reboot command */
+	else if ((cpu_is_msm8x60() || chk_apps_master()) && (*buf == 0x29)
+			&&(*(buf+1) == 0x02)
+			&&(*(buf+2) == 0x00)) {
+		/* send response back */
+		//driver->apps_rsp_buf[0] = *buf;
+		memcpy(driver->apps_rsp_buf, buf, 3);
+		encode_rsp_and_send(3);
+		msm_set_restart_mode(RESTART_NORMAL);
+		msleep(5000);
+		printk(KERN_EMERG "diag: normal reboot, Rebooting SoC..\n");
+		kernel_restart(NULL);
 		return 0;
 	}
 	/* Check for polling for Apps only DIAG */

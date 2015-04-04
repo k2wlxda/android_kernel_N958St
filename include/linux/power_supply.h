@@ -44,6 +44,7 @@ enum {
 	POWER_SUPPLY_CHARGE_TYPE_NONE,
 	POWER_SUPPLY_CHARGE_TYPE_TRICKLE,
 	POWER_SUPPLY_CHARGE_TYPE_FAST,
+	POWER_SUPPLY_CHARGE_TYPE_TAPER,
 };
 
 enum {
@@ -92,6 +93,10 @@ enum power_supply_property {
 	POWER_SUPPLY_PROP_HEALTH,
 	POWER_SUPPLY_PROP_PRESENT,
 	POWER_SUPPLY_PROP_ONLINE,
+	#ifdef CONFIG_ZTEMT_BQ24296_CHARGE
+	POWER_SUPPLY_PROP_DEVICE_INFO,
+	POWER_SUPPLY_PROP_RESTART_CHARGING,
+	#endif	
 	POWER_SUPPLY_PROP_AUTHENTIC,
 	POWER_SUPPLY_PROP_CHARGING_ENABLED,
 	POWER_SUPPLY_PROP_TECHNOLOGY,
@@ -177,6 +182,7 @@ enum power_supply_type {
 	POWER_SUPPLY_TYPE_USB_ACA,	/* Accessory Charger Adapters */
 	POWER_SUPPLY_TYPE_WIRELESS,	/* Accessory Charger Adapters */
 	POWER_SUPPLY_TYPE_BMS,		/* Battery Monitor System */
+	POWER_SUPPLY_TYPE_USB_PARALLEL,		/* USB Parallel Path */
 };
 
 union power_supply_propval {
@@ -266,6 +272,7 @@ extern int power_supply_set_online(struct power_supply *psy, bool enable);
 extern int power_supply_set_health_state(struct power_supply *psy, int health);
 extern int power_supply_set_present(struct power_supply *psy, bool enable);
 extern int power_supply_set_scope(struct power_supply *psy, int scope);
+extern int power_supply_set_usb_otg(struct power_supply *psy, int otg);
 extern int power_supply_set_charge_type(struct power_supply *psy, int type);
 extern int power_supply_set_supply_type(struct power_supply *psy,
 					enum power_supply_type supply_type);
@@ -299,6 +306,8 @@ static inline int power_supply_set_present(struct power_supply *psy,
 							{ return -ENOSYS; }
 static inline int power_supply_set_scope(struct power_supply *psy,
 							int scope)
+							{ return -ENOSYS; }
+static inline int power_supply_set_usb_otg(struct power_supply *psy, int otg)
 							{ return -ENOSYS; }
 static inline int power_supply_set_charge_type(struct power_supply *psy,
 							int type)

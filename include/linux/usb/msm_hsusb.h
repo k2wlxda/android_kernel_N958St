@@ -101,8 +101,11 @@ enum msm_usb_phy_type {
 	CI_45NM_INTEGRATED_PHY,
 	SNPS_28NM_INTEGRATED_PHY,
 };
-
+#ifdef CONFIG_ZTEMT_CHARGE_N918X
+#define IDEV_CHG_MAX	1260
+#else
 #define IDEV_CHG_MAX	1500
+#endif
 #define IDEV_CHG_MIN	500
 #define IUNIT		100
 

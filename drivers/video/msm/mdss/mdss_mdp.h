@@ -795,4 +795,9 @@ int mdss_mdp_footswitch_ctrl_idle_pc(int on, struct device *dev);
 				(mfd->mdp.private1))->wb)
 
 int  mdss_mdp_ctl_reset(struct mdss_mdp_ctl *ctl);
+
+#ifdef CONFIG_ZTEMT_LCD_DISP_ENHANCE
+int zte_mdss_pcc_config(struct mdp_pcc_cfg_data *config);
+#endif
+
 #endif /* MDSS_MDP_H */

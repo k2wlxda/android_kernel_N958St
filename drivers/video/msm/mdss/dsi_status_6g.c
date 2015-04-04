@@ -18,6 +18,15 @@
 #include "mdss_dsi.h"
 #include "mdss_mdp.h"
 
+#ifdef CONFIG_ZTEMT_LCD_ESD_TE_CHECK
+#include <linux/fb.h>
+#include <linux/notifier.h>
+#include <linux/workqueue.h>
+
+extern int mipi_lcd_esd_command(struct mdss_dsi_ctrl_pdata *ctrl_pdata);
+#endif
+
+
 /*
  * mdss_check_dsi_ctrl_status() - Check MDP5 DSI controller status periodically.
  * @work     : dsi controller status data
@@ -57,6 +66,19 @@ void mdss_check_dsi_ctrl_status(struct work_struct *work, uint32_t interval)
 		return;
 	}
 
+//+++duguowei,crash if no lcd
+#ifdef CONFIG_ZTEMT_LCD_ESD_TE_CHECK
+		if(ctrl_pdata->panel_name == NULL || !strcmp("",ctrl_pdata->panel_name)){
+			fb_unregister_client(&pstatus_data->fb_notifier);
+			cancel_delayed_work_sync(&pstatus_data->check_status);
+			kfree(pstatus_data);
+			pr_err("%s: DSI ctrl status work queue removed\n", __func__);
+			return;
+		}
+#endif
+//---duguowei,crash if no lcd
+
+
 	mdp5_data = mfd_to_mdp5_data(pstatus_data->mfd);
 	ctl = mfd_to_ctl(pstatus_data->mfd);
 
@@ -76,7 +98,8 @@ void mdss_check_dsi_ctrl_status(struct work_struct *work, uint32_t interval)
 		mutex_lock(ctl->shared_lock);
 	mutex_lock(&mdp5_data->ov_lock);
 
-	if (pstatus_data->mfd->shutdown_pending) {
+	if (pstatus_data->mfd->shutdown_pending ||
+		!pstatus_data->mfd->panel_power_on) {
 		mutex_unlock(&mdp5_data->ov_lock);
 		if (ctl->shared_lock)
 			mutex_unlock(ctl->shared_lock);
@@ -109,17 +132,27 @@ void mdss_check_dsi_ctrl_status(struct work_struct *work, uint32_t interval)
 		mutex_unlock(ctl->shared_lock);
 
 	if ((pstatus_data->mfd->panel_power_on)) {
-		if (ret > 0) {
-			schedule_delayed_work(&pstatus_data->check_status,
-				msecs_to_jiffies(interval));
-		} else {
+		if (ret > 0)
+        {
+			printk("lcd:check_status ret > 0,schedule_delayed_work\n");
+			schedule_delayed_work(&pstatus_data->check_status, msecs_to_jiffies(interval));
+		}
+        else
+        {
 			char *envp[2] = {"PANEL_ALIVE=0", NULL};
+			printk("lcd:check_status ret <= 0\n");
+#ifdef CONFIG_ZTEMT_LCD_ESD_TE_CHECK
+			if (mipi_lcd_esd_command(ctrl_pdata) == 0) {
+				return;
+			}
+#endif
 			pdata->panel_info.panel_dead = true;
 			ret = kobject_uevent_env(
 				&pstatus_data->mfd->fbi->dev->kobj,
 							KOBJ_CHANGE, envp);
 			pr_err("%s: Panel has gone bad, sending uevent - %s\n",
 							__func__, envp[0]);
+			schedule_delayed_work(&pstatus_data->check_status, msecs_to_jiffies(interval));
 		}
 	}
 }

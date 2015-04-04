@@ -318,6 +318,11 @@ int of_batterydata_read_data(struct device_node *batterydata_container_node,
 
 	batt_id_kohm = of_batterydata_convert_battery_id_kohm(batt_id_uv,
 					rpull_up_kohm, vadc_vdd_uv);
+	
+	#if defined(CONFIG_ZTEMT_PM8916_BMS)  
+	batt_id_kohm = 47;
+	#endif
+	
 	best_node = NULL;
 	best_delta = 0;
 	best_id_kohm = 0;

@@ -243,6 +243,9 @@ struct mipi_panel_info {
 
 	char lp11_init;
 	u32  init_delay;
+
+    u32  lp11_rst_delay;
+    u32  sleep_lp00_delay;
 };
 
 struct edp_panel_info {
@@ -309,6 +312,14 @@ struct mdss_panel_info {
 	u32 brightness_max;
 	u32 bl_max;
 	u32 bl_min;
+#ifdef CONFIG_ZTEMT_LCD_BACKLIGHT_LINEAR_CONTROL_METHOLD
+	u32 bl_level;
+    int brig_to_bl_lvl_para_a1;
+    int brig_to_bl_lvl_para_a2;
+    int brig_to_bl_lvl_para_b1;
+    int brig_to_bl_lvl_para_b2;
+    int brig_to_bl_lvl_turn_point;
+#endif
 	u32 fb_num;
 	u32 clk_rate;
 	u32 clk_min;
@@ -348,6 +359,13 @@ struct mdss_panel_info {
 	uint32_t panel_dead;
 	bool dynamic_switch_pending;
 	bool is_lpm_mode;
+
+    bool avdd_enabled;
+    u32  avdd_vsp_voltage;
+    u32  avdd_vsn_voltage;
+    u32  avdd_vsp_vsn_delay;
+    u32  before_panel_on_cmd_delay;
+    u32  before_avdd_off_delay;
 
 	struct mdss_mdp_pp_tear_check te;
 

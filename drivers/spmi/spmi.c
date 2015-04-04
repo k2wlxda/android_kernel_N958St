@@ -235,8 +235,18 @@ int spmi_add_device(struct spmi_device *spmidev)
 		return -EINVAL;
 	}
 
-	/* Set the device name */
-	dev_set_name(dev, "%s-%p", spmidev->name, spmidev);
+//#ifdef CONFIG_ZTEMT_HW_VERSION
+	if(strncmp(spmidev->name,"qpnp-ztemt_hw_version",strlen("qpnp-ztemt_hw_version"))==0)
+	{
+	   dev_set_name(dev, "%s", spmidev->name);
+    }else{	
+	   /* Set the device name */
+	   dev_set_name(dev, "%s-%p", spmidev->name, spmidev);
+	}
+//#else
+//	/* Set the device name */
+//	dev_set_name(dev, "%s-%p", spmidev->name, spmidev);
+//#endif
 
 	/* Device may be bound to an active driver when this returns */
 	rc = device_add(dev);

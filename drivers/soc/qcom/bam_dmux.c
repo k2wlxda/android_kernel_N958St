@@ -1829,6 +1829,7 @@ static int ssrestart_check(void)
 	DMUX_LOG_KERR(
 		"%s: fatal modem interaction: BAM DMUX disabled for SSR\n",
 								__func__);
+	dump_stack();
 	in_global_reset = 1;
 	ret = subsystem_restart("modem");
 	if (ret == -ENODEV)
@@ -2236,6 +2237,9 @@ static int bam_init(void)
 	int ret;
 	void *a2_virt_addr;
 	int skip_iounmap = 0;
+    /* patch for network connect failed issue */
+	in_global_reset = 0;
+	in_ssr = 0;
 
 	vote_dfab();
 	/* init BAM */

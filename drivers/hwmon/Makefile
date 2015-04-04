@@ -26,6 +26,7 @@ obj-$(CONFIG_SENSORS_AD7314)	+= ad7314.o
 obj-$(CONFIG_SENSORS_AD7414)	+= ad7414.o
 obj-$(CONFIG_SENSORS_AD7418)	+= ad7418.o
 obj-$(CONFIG_SENSORS_ADCXX)	+= adcxx.o
+obj-$(CONFIG_ZTEMT_LIQUID_LED)	+= aw_9106b.o
 obj-$(CONFIG_SENSORS_ADM1021)	+= adm1021.o
 obj-$(CONFIG_SENSORS_ADM1025)	+= adm1025.o
 obj-$(CONFIG_SENSORS_ADM1026)	+= adm1026.o
@@ -145,7 +146,24 @@ obj-$(CONFIG_SENSORS_EPM_ADC)	+= epm_adc.o
 obj-$(CONFIG_SENSORS_QPNP_ADC_VOLTAGE)	+= qpnp-adc-voltage.o qpnp-adc-common.o
 obj-$(CONFIG_SENSORS_QPNP_ADC_CURRENT)	+= qpnp-adc-current.o qpnp-adc-common.o
 
+################################################# SENROS START
+
+################################################# COMPASS  START
+obj-$(CONFIG_ZTEMT_SENSORS_COMPASS_AKM09911)   += akm09911.o sensor_fliter_work.o
+################################################# COMPASS  END
+
+################################################# ALS_PS START
+obj-$(CONFIG_ZTEMT_SENSORS_ALS_PS_TMD2772) += tmd2772.o
+obj-$(CONFIG_ZTEMT_SENSORS_ALS_PS_STK3X1X) += stk3x1x.o
+################################################# ALS_PS END
+
+################################################# HALL_DEVICE START
+obj-$(CONFIG_ZTEMT_SENSORS_HALL_DEVICE_SIGNLE_OUT)  += hall_signle_out.o
+################################################# HALL_DEVICE END
+
+################################################# SENROS END
+
 obj-$(CONFIG_PMBUS)		+= pmbus/
 
 ccflags-$(CONFIG_HWMON_DEBUG_CHIP) := -DDEBUG
-
+obj-y							+= ztemt_hw_version.o

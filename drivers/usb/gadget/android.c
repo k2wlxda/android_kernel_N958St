@@ -89,6 +89,8 @@ static const char longname[] = "Gadget Android";
 
 #define ANDROID_DEVICE_NODE_NAME_LENGTH 11
 
+#define FEATURE_ZTEMT_STORAGE
+
 struct android_usb_function {
 	char *name;
 	void *config;
@@ -446,12 +448,29 @@ static void ffs_function_enable(struct android_usb_function *f)
 {
 	struct android_dev *dev = f->android_dev;
 	struct functionfs_config *config = f->config;
-
+#if 0
 	config->enabled = true;
 
 	/* Disable the gadget until the function is ready */
 	if (!config->opened)
 		android_disable(dev);
+#endif
+	//add by gaoshuchao  add qcom patch
+	int ret = 0;
+	config->enabled = true;
+	
+	/* Disable the gadget until the function is ready */
+	if (!config->opened) {
+	android_disable(dev);
+	 } else {
+	 /*
+	 * Call functionfs_bind to handle the case where userspace
+	 * passed descriptors before updating enabled functions list
+	 */
+	 ret = functionfs_bind(config->data, dev->cdev);
+	 if (ret)
+	 pr_err("%s: functionfs_bind failed (%d)\n", __func__,ret);
+	 }
 }
 
 static void ffs_function_disable(struct android_usb_function *f)
@@ -536,24 +555,29 @@ static int functionfs_ready_callback(struct ffs_data *ffs)
 	struct functionfs_config *config = ffs_function.config;
 	int ret = 0;
 
-	if (dev) {
-		ret = functionfs_bind(ffs, dev->cdev);
-		if (ret)
-			return ret;
-	}
-
 	/* dev is null in case ADB is not in the composition */
-	if (dev)
+	if (dev) {
 		mutex_lock(&dev->mutex);
+		ret = functionfs_bind(ffs, dev->cdev);
+		if (ret) {
+			mutex_unlock(&dev->mutex);
+			return ret;
+		}
+	} else {
+		/* android ffs_func requires daemon to start only after enable*/
+		pr_debug("start adbd only in ADB composition\n");
+		return -ENODEV;
+	}
 
 	config->data = ffs;
 	config->opened = true;
+	/* Save dev in case the adb function will get disabled */
+	config->dev = dev;
 
-	if (config->enabled && dev)
+	if (config->enabled)
 		android_enable(dev);
 
-	if (dev)
-		mutex_unlock(&dev->mutex);
+	mutex_unlock(&dev->mutex);
 
 	return 0;
 }
@@ -563,30 +587,32 @@ static void functionfs_closed_callback(struct ffs_data *ffs)
 	struct android_dev *dev = ffs_function.android_dev;
 	struct functionfs_config *config = ffs_function.config;
 
-	/* In case new composition is without ADB, use saved one */
+	/*
+	 * In case new composition is without ADB or ADB got disabled by the
+	 * time ffs_daemon was stopped then use saved one
+	 */
 	if (!dev)
 		dev = config->dev;
 
+	/* fatal-error: It should never happen */
 	if (!dev)
 		pr_err("adb_closed_callback: config->dev is NULL");
 
 	if (dev)
 		mutex_lock(&dev->mutex);
 
-	config->opened = false;
-
 	if (config->enabled && dev)
 		android_disable(dev);
 
 	config->dev = NULL;
 
-	if (dev)
-		mutex_unlock(&dev->mutex);
-
 	config->opened = false;
 	config->data = NULL;
 
 	functionfs_unbind(ffs);
+
+	if (dev)
+		mutex_unlock(&dev->mutex);
 }
 
 static void *functionfs_acquire_dev_callback(const char *dev_name)
@@ -2196,10 +2222,14 @@ static int mass_storage_function_init(struct android_usb_function *f,
 	struct mass_storage_function_config *config;
 	struct fsg_common *common;
 	int err;
+	int i;
+	#ifndef FEATURE_ZTEMT_STORAGE
 	int i, n;
+	#endif
 	char name[FSG_MAX_LUNS][MAX_LUN_NAME];
+	#ifndef FEATURE_ZTEMT_STORAGE
 	u8 uicc_nluns = dev->pdata ? dev->pdata->uicc_nluns : 0;
-
+    #endif
 	config = kzalloc(sizeof(struct mass_storage_function_config),
 							GFP_KERNEL);
 	if (!config) {
@@ -2218,7 +2248,16 @@ static int mass_storage_function_init(struct android_usb_function *f,
 		snprintf(name[config->fsg.nluns], MAX_LUN_NAME, "rom");
 		config->fsg.nluns++;
 	}
-
+#ifdef FEATURE_ZTEMT_STORAGE
+    //if (dev->pdata && dev->pdata->external_ums) {
+      {
+	   config->fsg.luns[config->fsg.nluns].cdrom = 0;
+	   config->fsg.luns[config->fsg.nluns].ro = 0;
+	   config->fsg.luns[config->fsg.nluns].removable = 1;
+	   snprintf(name[config->fsg.nluns],MAX_LUN_NAME, "disk");
+	   config->fsg.nluns++;
+     }
+#else
 	if (uicc_nluns > FSG_MAX_LUNS - config->fsg.nluns) {
 		uicc_nluns = FSG_MAX_LUNS - config->fsg.nluns;
 		pr_debug("limiting uicc luns to %d\n", uicc_nluns);
@@ -2230,7 +2269,7 @@ static int mass_storage_function_init(struct android_usb_function *f,
 		config->fsg.luns[n].removable = 1;
 		config->fsg.nluns++;
 	}
-
+#endif
 	common = fsg_common_init(NULL, cdev, &config->fsg);
 	if (IS_ERR(common)) {
 		kfree(config);

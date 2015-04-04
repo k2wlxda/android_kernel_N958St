@@ -26,10 +26,52 @@
 #include "mdss_panel.h"
 #include "mdss_dsi.h"
 #include "mdss_debug.h"
+#include "zte_lcd_check_status.h"
 
 static int mdss_dsi_pinctrl_set_state(struct mdss_dsi_ctrl_pdata *ctrl_pdata,
 					bool active);
 
+#ifdef CONFIG_ZTEMT_LCD_ESD_TE_CHECK
+
+#define HX8392B_0A_CHECK 0X1C
+int success_hx83920b_check_status(struct mdss_dsi_ctrl_pdata *ctrl)
+{
+  return -1;
+}
+
+int zte_lcd_te_check_flag =0;
+int zte_check_status_by_te(struct mdss_dsi_ctrl_pdata *ctrl)
+{
+	int ret=1;
+
+	if(zte_lcd_te_check_flag > 0) {
+		zte_lcd_te_check_flag = 0;
+		enable_irq(ctrl->lcd_te_irq);
+	} else {
+		ret = -1;
+	}
+
+	return ret;
+}
+static irqreturn_t zte_lcd_te_irq_handler(int irq, void *ptr)
+{
+  	struct mdss_dsi_ctrl_pdata *ctrl = (struct mdss_dsi_ctrl_pdata *)ptr;
+
+	  disable_irq_nosync(ctrl->lcd_te_irq);
+	  zte_lcd_te_check_flag++;
+
+	  printk("lcd:%s zte_lcd_te_check_flag=%d\n",__func__,zte_lcd_te_check_flag);
+	  return IRQ_HANDLED;
+}
+
+#endif
+
+//+++duguowei
+#ifdef CONFIG_ZTEMT_LCD_DISP_ENHANCE
+extern void zte_disp_enhance(void);
+#endif
+
+//---duguowei
 static int mdss_dsi_regulator_init(struct platform_device *pdev)
 {
 	int rc = 0;
@@ -369,6 +411,9 @@ static int mdss_dsi_off(struct mdss_panel_data *pdata)
 		pr_warn("%s:%d Panel already off.\n", __func__, __LINE__);
 		return 0;
 	}
+
+    // keep reset before video off
+    usleep(pdata->panel_info.mipi.sleep_lp00_delay);
 
 	pdata->panel_info.panel_power_on = 0;
 
@@ -733,7 +778,11 @@ int mdss_dsi_on(struct mdss_panel_data *pdata)
 		pdata->panel_info.panel_power_on = 0;
 		return ret;
 	}
-	pdata->panel_info.panel_power_on = 1;
+
+    if (!mipi->lp11_init)
+    {
+        pdata->panel_info.panel_power_on = 1;
+    }
 
 	mdss_dsi_phy_sw_reset((ctrl_pdata->ctrl_base));
 	mdss_dsi_phy_init(pdata);
@@ -750,13 +799,15 @@ int mdss_dsi_on(struct mdss_panel_data *pdata)
 	 * data lanes for LP11 init
 	 */
 	if (mipi->lp11_init) {
+        usleep(mipi->lp11_rst_delay);
 		if (mdss_dsi_pinctrl_set_state(ctrl_pdata, true))
 			pr_debug("reset enable: pinctrl not enabled\n");
 		mdss_dsi_panel_reset(pdata, 1);
+        pdata->panel_info.panel_power_on = 1;
 	}
 
-	if (mipi->init_delay)
-		usleep(mipi->init_delay);
+    if (mipi->init_delay)
+            usleep(mipi->init_delay);
 
 	if (mipi->force_clk_lane_hs) {
 		u32 tmp;
@@ -858,6 +909,11 @@ static int mdss_dsi_unblank(struct mdss_panel_data *pdata)
 		ctrl_pdata->ctrl_state |= CTRL_STATE_PANEL_INIT;
 	}
 
+//+++
+#ifdef CONFIG_ZTEMT_LCD_DISP_ENHANCE
+	zte_disp_enhance();
+#endif
+//---
 	if ((pdata->panel_info.type == MIPI_CMD_PANEL) &&
 		mipi->vsync_enable && mipi->hw_vsync_mode)
 		mdss_dsi_set_tear_on(ctrl_pdata);
@@ -1368,6 +1424,16 @@ static int mdss_dsi_ctrl_probe(struct platform_device *pdev)
 		pr_err("%s: dsi panel dev reg failed\n", __func__);
 		goto error_pan_node;
 	}
+#ifdef CONFIG_ZTEMT_LCD_ESD_TE_CHECK
+/*esd check faild check,mayu add*/
+//printk("lcd:%s disp_te_gpio=%d\n",__func__,ctrl_pdata->disp_te_gpio);
+	ctrl_pdata->lcd_te_irq = gpio_to_irq(ctrl_pdata->disp_te_gpio);
+	rc = request_irq(ctrl_pdata->lcd_te_irq, zte_lcd_te_irq_handler, \
+			  IRQF_TRIGGER_RISING|IRQF_TRIGGER_FALLING, "LCD_TE", ctrl_pdata);
+	 if (rc < 0) {
+		 printk("lcd:%s : request_irq failed\n", __func__);
+	 }
+#endif
 
 	pr_debug("%s: Dsi Ctrl->%d initialized\n", __func__, index);
 	return 0;
@@ -1628,6 +1694,12 @@ int dsi_panel_device_register(struct device_node *pan_node,
 		pr_err("%s:%d, reset gpio not specified\n",
 						__func__, __LINE__);
 
+
+    ctrl_pdata->disp_te_gpio = of_get_named_gpio(ctrl_pdev->dev.of_node,
+            "qcom,platform-te-gpio", 0);
+        if (!gpio_is_valid(ctrl_pdata->disp_te_gpio))
+            pr_info("%s: disp_te_gpio not specified\n", __func__);
+
 	if (pinfo->mode_gpio_state != MODE_GPIO_NOT_VALID) {
 
 		ctrl_pdata->mode_gpio = of_get_named_gpio(
@@ -1658,11 +1730,27 @@ int dsi_panel_device_register(struct device_node *pan_node,
 		ctrl_pdata->check_status = mdss_dsi_reg_status_check;
 	else if (ctrl_pdata->status_mode == ESD_BTA)
 		ctrl_pdata->check_status = mdss_dsi_bta_status_check;
+    else if (ctrl_pdata->status_mode == ESD_REG_ZTE)
+        zte_lcd_check_status_init(ctrl_pdata);
 
 	if (ctrl_pdata->status_mode == ESD_MAX) {
 		pr_err("%s: Using default BTA for ESD check\n", __func__);
 		ctrl_pdata->check_status = mdss_dsi_bta_status_check;
 	}
+
+#ifdef CONFIG_ZTEMT_LCD_ESD_TE_CHECK
+		if (ctrl_pdata->panel_name
+			   && (!strcmp(ctrl_pdata->panel_name, "cs nt35592 720p video mode dsi panel")
+					|| !strcmp(ctrl_pdata->panel_name, "lianchuang nt35592 720p video mode dsi panel"))) {
+			ctrl_pdata->check_status = zte_check_status_by_te;
+			printk("nt35592 check by te\n");
+		} else if (ctrl_pdata->panel_name 
+			&& !strcmp(ctrl_pdata->panel_name, "success hx8392b 720p video mode dsi panel")) {
+			ctrl_pdata->check_status = success_hx83920b_check_status;
+			printk("hx83920b check faled always\n");
+		}
+#endif
+	
 	if (ctrl_pdata->bklt_ctrl == BL_PWM)
 		mdss_dsi_panel_pwm_cfg(ctrl_pdata);
 
@@ -1684,6 +1772,18 @@ int dsi_panel_device_register(struct device_node *pan_node,
 		if (rc) {
 			pr_err("%s: Panel power on failed\n", __func__);
 			return rc;
+		}
+
+        if (pinfo->mipi.lp11_init) {
+			if (mdss_dsi_pinctrl_set_state(ctrl_pdata, true))
+				pr_debug("reset enable: pinctrl not enabled\n");
+
+			rc = mdss_dsi_panel_reset(&(ctrl_pdata->panel_data), 1);
+			if (rc) {
+				pr_err("%s: Panel reset failed. rc=%d\n",
+						__func__, rc);
+				return rc;
+			}
 		}
 
 		mdss_dsi_clk_ctrl(ctrl_pdata, DSI_ALL_CLKS, 1);

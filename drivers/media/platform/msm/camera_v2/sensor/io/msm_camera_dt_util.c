@@ -18,6 +18,7 @@
 
 #define CAM_SENSOR_PINCTRL_STATE_SLEEP "cam_suspend"
 #define CAM_SENSOR_PINCTRL_STATE_DEFAULT "cam_default"
+
 /*#define CONFIG_MSM_CAMERA_DT_DEBUG*/
 #undef CDBG
 #ifdef CONFIG_MSM_CAMERA_DT_DEBUG
@@ -443,6 +444,12 @@ int msm_camera_get_dt_power_setting_data(struct device_node *of_node,
 				ps[i].seq_val = SENSOR_GPIO_STANDBY;
 			else if (!strcmp(seq_name, "sensor_gpio_vdig"))
 				ps[i].seq_val = SENSOR_GPIO_VDIG;
+	//added by congshan start
+			else if (!strcmp(seq_name, "sensor_gpio_vana"))
+				ps[i].seq_val = SENSOR_GPIO_VANA;
+			else if (!strcmp(seq_name, "sensor_gpio_vio"))
+				ps[i].seq_val = SENSOR_GPIO_VIO;
+	//added by congshan end
 			else
 				rc = -EILSEQ;
 			break;
@@ -772,7 +779,27 @@ int msm_camera_init_gpio_pin_tbl(struct device_node *of_node,
 			gconf->gpio_num_info->gpio_num[SENSOR_GPIO_VDIG]);
 	} else
 		rc = 0;
-
+////tanyijun add start 
+	rc = of_property_read_u32(of_node, "qcom,gpio-vio", &val);
+	if (rc != -EINVAL) {
+		if (rc < 0) {
+			pr_err("%s:%d read qcom,gpio-vio failed rc %d\n",
+				__func__, __LINE__, rc);
+			goto ERROR;
+		} else if (val >= gpio_array_size) {
+			pr_err("%s:%d qcom,gpio-vio invalid %d\n",
+				__func__, __LINE__, val);
+			rc = -EINVAL;
+			goto ERROR;
+		}
+		gconf->gpio_num_info->gpio_num[SENSOR_GPIO_VIO] =
+			gpio_array[val];
+		gconf->gpio_num_info->valid[SENSOR_GPIO_VIO] = 1;
+		CDBG("%s qcom,gpio-vio %d\n", __func__,
+			gconf->gpio_num_info->gpio_num[SENSOR_GPIO_VIO]);
+	} else
+		rc = 0;
+////tanyijun add end
 	rc = of_property_read_u32(of_node, "qcom,gpio-reset", &val);
 	if (rc != -EINVAL) {
 		if (rc < 0) {
@@ -1299,6 +1326,10 @@ int msm_camera_power_down(struct msm_camera_power_ctrl_t *ctrl,
 								__func__);
 				break;
 		case SENSOR_GPIO:
+		printk("pd->seq_val = %d ,pd->config_val=%ld\n ",pd->seq_val,pd->config_val);
+		//	if(pd->seq_val==SENSOR_GPIO_VIO )
+		//		break;  //tanyijun add
+				
 			if (pd->seq_val >= SENSOR_GPIO_MAX ||
 				!ctrl->gpio_conf->gpio_num_info) {
 				pr_err("%s gpio index %d >= max %d\n", __func__,

@@ -33,7 +33,11 @@ static LIST_HEAD(clk_list);
 static DEFINE_MUTEX(clk_list_lock);
 
 static struct dentry *debugfs_base;
+#ifdef CONFIG_ZTEMT_POWER_DEBUG
+static u32 debug_suspend = 1;
+#else
 static u32 debug_suspend;
+#endif
 
 struct clk_table {
 	struct list_head node;

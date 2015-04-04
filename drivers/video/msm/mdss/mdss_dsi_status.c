@@ -30,7 +30,8 @@
 #include "mdss_panel.h"
 #include "mdss_mdp.h"
 
-#define STATUS_CHECK_INTERVAL_MS 5000
+#define STATUS_CHECK_INTERVAL_MS 2000
+
 #define STATUS_CHECK_INTERVAL_MIN_MS 200
 #define DSI_STATUS_CHECK_DISABLE 0
 
@@ -60,6 +61,12 @@ static void check_dsi_ctrl_status(struct work_struct *work)
 		return;
 	}
 
+	if (pdsi_status->mfd->shutdown_pending ||
+		!pdsi_status->mfd->panel_power_on) {
+		pr_err("%s: panel off\n", __func__);
+		return;
+	}
+
 	pdsi_status->mfd->mdp.check_dsi_status(work, interval);
 }
 
@@ -82,9 +89,10 @@ static int fb_event_callback(struct notifier_block *self,
 				struct dsi_status_data, fb_notifier);
 	struct mdss_dsi_ctrl_pdata *ctrl_pdata = NULL;
 	struct mdss_panel_info *pinfo;
-
-	pdata->mfd = evdata->info->par;
-	ctrl_pdata = container_of(dev_get_platdata(&pdata->mfd->pdev->dev),
+	struct msm_fb_data_type *mfd;
+    static bool esd_check_start_time=true;
+	mfd = evdata->info->par;
+	ctrl_pdata = container_of(dev_get_platdata(&mfd->pdev->dev),
 				struct mdss_dsi_ctrl_pdata, panel_data);
 	if (!ctrl_pdata) {
 		pr_err("%s: DSI ctrl not available\n", __func__);
@@ -103,17 +111,29 @@ static int fb_event_callback(struct notifier_block *self,
 		return NOTIFY_DONE;
 	}
 
+	pdata->mfd = evdata->info->par;
 	if (event == FB_EVENT_BLANK && evdata) {
 		int *blank = evdata->data;
 		struct dsi_status_data *pdata = container_of(self,
 				struct dsi_status_data, fb_notifier);
 		pdata->mfd = evdata->info->par;
+		
+		pr_err("%s: event == FB_EVENT_BLANK\n",__func__);
 
 		switch (*blank) {
 		case FB_BLANK_UNBLANK:
-			schedule_delayed_work(&pdata->check_status,
-				msecs_to_jiffies(interval));
+        {
+            if (true==esd_check_start_time && ESD_REG_ZTE==ctrl_pdata->status_mode)
+            {
+			    schedule_delayed_work(&pdata->check_status, msecs_to_jiffies(interval+20000));
+                esd_check_start_time = false;
+            }
+            else
+            {
+			    schedule_delayed_work(&pdata->check_status, msecs_to_jiffies(interval));
+            }
 			break;
+        }
 		case FB_BLANK_POWERDOWN:
 		case FB_BLANK_HSYNC_SUSPEND:
 		case FB_BLANK_VSYNC_SUSPEND:
@@ -183,11 +203,11 @@ int __init mdss_dsi_status_init(void)
 		return -EPERM;
 	}
 
-	pr_info("%s: DSI status check interval:%d\n", __func__,	interval);
+	pr_err("%s: DSI status check interval:%d\n", __func__,	interval);
 
 	INIT_DELAYED_WORK(&pstatus_data->check_status, check_dsi_ctrl_status);
 
-	pr_debug("%s: DSI ctrl status work queue initialized\n", __func__);
+	pr_err("%s: DSI ctrl status work queue initialized\n", __func__);
 
 	return rc;
 }

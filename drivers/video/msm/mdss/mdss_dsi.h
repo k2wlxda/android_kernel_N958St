@@ -85,6 +85,7 @@ enum dsi_panel_bl_ctrl {
 enum dsi_panel_status_mode {
 	ESD_BTA,
 	ESD_REG,
+    ESD_REG_ZTE,
 	ESD_MAX,
 };
 
@@ -253,6 +254,9 @@ enum {
 
 struct mdss_dsi_ctrl_pdata {
 	int ndx;	/* panel_num */
+//#if defined(CONFIG_ZTEMT_LCD_ESD_TE_CHECK)
+ 	char *panel_name;
+//#endif
 	int (*on) (struct mdss_panel_data *pdata);
 	int (*off) (struct mdss_panel_data *pdata);
 	int (*partial_update_fnc) (struct mdss_panel_data *pdata);
@@ -280,7 +284,12 @@ struct mdss_dsi_ctrl_pdata {
 	int irq_cnt;
 	int rst_gpio;
 	int disp_en_gpio;
+#ifdef CONFIG_ZTEMT_LCD_ESD_TE_CHECK
+  	int lcd_te_irq;
+#endif
+
 	int bklt_en_gpio;
+	int disp_te_gpio;
 	int mode_gpio;
 	int bklt_ctrl;	/* backlight ctrl */
 	int pwm_period;
@@ -306,6 +315,9 @@ struct mdss_dsi_ctrl_pdata {
 	struct dsi_panel_cmds video2cmd;
 	struct dsi_panel_cmds cmd2video;
 
+#if defined(CONFIG_ZTEMT_LCD_ESD_TE_CHECK)
+ 	struct dsi_panel_cmds on_cmds_esd;
+#endif
 	struct dcs_cmd_list cmdlist;
 	struct completion dma_comp;
 	struct completion mdp_comp;
@@ -392,7 +404,11 @@ int mdss_dsi_panel_init(struct device_node *node,
 		bool cmd_cfg_cont_splash);
 int mdss_panel_get_dst_fmt(u32 bpp, char mipi_mode, u32 pixel_packing,
 				char *dst_format);
-
+//+++
+#ifdef CONFIG_ZTEMT_LCD_ESD_TE_CHECK
+int mipi_lcd_esd_command(struct mdss_dsi_ctrl_pdata *ctrl_pdata);
+#endif
+//---
 static inline const char *__mdss_dsi_pm_name(enum dsi_pm_type module)
 {
 	switch (module) {

@@ -26,6 +26,7 @@
 #include <linux/delay.h>
 #include <linux/regulator/consumer.h>
 #include <linux/delay.h>
+#include <linux/completion.h>
 
 #define WLED_MOD_EN_REG(base, n)	(base + 0x60 + n*0x10)
 #define WLED_IDAC_DLY_REG(base, n)	(WLED_MOD_EN_REG(base, n) + 0x01)
@@ -186,7 +187,84 @@
 #define	PWM_LUT_MAX_SIZE		63
 #define	PWM_GPLED_LUT_MAX_SIZE		31
 #define RGB_LED_DISABLE			0x00
+#define  ZTEMT_BRATHING_LED
 
+
+#ifdef ZTEMT_BRATHING_LED
+enum rgb_led_mode {
+	rgb_led_mode_closed        = 0,
+	rgb_led_mode_normal        = 1,
+	rgb_led_mode_off           = 2,
+	rgb_led_mode_charge_breath = 3,
+	rgb_led_mode_power_on      = 4,
+	rgb_led_mode_power_off     = 5,
+	rgb_led_mode_breath_blink  = 6,
+};
+
+struct pwm_device   *pwm_dev_red;
+struct pwm_device   *pwm_dev_green;
+struct pwm_device   *pwm_dev_blue;
+
+enum channel_num{
+    channel_red=16,
+    channel_green=32,
+    channel_blue=8,
+};
+
+static int  ztemt_channel;
+
+#define GRADE_PARAM_LEN 20
+#define CONST_MIN_GRADE  10
+#define CONST_MAX_GRADE  200
+static int min_grade = CONST_MIN_GRADE;
+static int max_grade = CONST_MAX_GRADE;
+static char grade_parameter[GRADE_PARAM_LEN];
+
+#define FADE_PARAM_LEN 20
+static int fade_time= 2;
+static int fullon_time= 0;
+static int fulloff_time= 0;
+static char fade_parameter[FADE_PARAM_LEN];
+
+#endif
+
+
+
+
+#ifdef ZTEMT_BRATHING_LED
+#include "linux/wait.h"
+#include <linux/kthread.h>
+#include <linux/freezer.h>
+#include "linux/spinlock.h"
+#define  BREATHLED_MAX_EVENTS		16
+//#define duty 10
+//#define  T   10000
+//static int time=1;
+static unsigned int  per=5000;
+static unsigned int  scale_up=10;
+static unsigned int  scale_down=20;
+static unsigned int  half_breath_count=0;
+static unsigned int  onecycle_breath_count=0;
+static unsigned int  stop_breathing=0;
+static unsigned int  time=5;
+static unsigned int  breathon=1;
+typedef unsigned short	breathled_event_t;
+
+struct breathled_queue {
+	unsigned int		event_head;
+	unsigned int		event_tail;
+	breathled_event_t	events[BREATHLED_MAX_EVENTS];
+};
+
+static struct task_struct *breathled_tsk;
+static DECLARE_WAIT_QUEUE_HEAD(breathled_wait);
+
+static DEFINE_SPINLOCK(breathled_queue_lock);
+
+static DECLARE_RWSEM(breathled_list_lock);
+
+static struct breathled_queue breathled_queue;
+#endif
 #define MPP_MAX_LEVEL			LED_FULL
 #define LED_MPP_MODE_CTRL(base)		(base + 0x40)
 #define LED_MPP_VIN_CTRL(base)		(base + 0x41)
@@ -549,6 +627,209 @@ struct qpnp_led_data {
 
 static int num_kpbl_leds_on;
 
+#ifdef ZTEMT_BRATHING_LED
+static inline int queue_empty(struct breathled_queue *q)
+{
+	return q->event_head == q->event_tail;
+}
+
+void breathled_queue_clear(struct breathled_queue *q)
+{
+
+  q->event_head=q->event_tail=0;
+}
+
+static inline breathled_event_t queue_get_event(struct breathled_queue *q)
+{
+	q->event_tail = (q->event_tail + 1) % BREATHLED_MAX_EVENTS;
+	return q->events[q->event_tail];
+}
+
+static void queue_add_event(struct breathled_queue *q, breathled_event_t event)
+{
+	q->event_head = (q->event_head + 1) % BREATHLED_MAX_EVENTS;
+	if (q->event_head == q->event_tail) {
+		static int notified;
+
+		if (notified++ == 0)
+		    printk(KERN_ERR "apm: an event queue overflowed\n");
+		q->event_tail = (q->event_tail + 1) % BREATHLED_MAX_EVENTS;
+	}
+	q->events[q->event_head] = event;
+}
+
+void breathled_queue_event(breathled_event_t event)
+{
+	unsigned long flags;
+
+	spin_lock_irqsave(&breathled_queue_lock, flags);
+	queue_add_event(&breathled_queue, event);
+	spin_unlock_irqrestore(&breathled_queue_lock, flags);
+
+	wake_up_interruptible(&breathled_wait);
+}
+//EXPORT_SYMBOL(breathled_queue_event);
+
+
+void breathing(struct qpnp_led_data *led)
+{
+  if(breathon==1){
+      time+=scale_up;
+      if(time>=per){
+	    breathon=0;
+	    time=per;
+      }
+      led->cdev.brightness = 20;
+      schedule_work(&led->work);
+      usleep(time);
+      led->cdev.brightness = 0;
+      schedule_work(&led->work);
+      usleep((per-time));
+    }else if(breathon==0){
+	  time-=scale_down;
+      if(time<=0){
+	    time=5;
+	    breathon=1;
+      }
+      led->cdev.brightness = 20;
+      schedule_work(&led->work);
+      usleep(time);
+      led->cdev.brightness = 0;
+      schedule_work(&led->work);
+      usleep((per-time));
+    }	
+}
+
+
+void breathing_onesycle(struct qpnp_led_data *led)
+{
+	breathled_event_t  evt;
+	evt=4;
+
+	onecycle_breath_count++;
+	breathing(led);
+    if(onecycle_breath_count<750){
+	 breathled_queue_event(evt); 
+     }
+	else if(onecycle_breath_count>=750){
+	onecycle_breath_count=0;
+	led->cdev.brightness = 0;
+    schedule_work(&led->work);
+	 time=5;
+	 breathon=1;
+	}	
+}
+
+void breathing_halfsycle_up(struct qpnp_led_data *led)
+{
+	breathled_event_t  evt;
+	evt=3;
+	half_breath_count++;
+    breathing(led);
+	if(half_breath_count<500){
+	   breathled_queue_event(evt); 
+	  }
+	else if(half_breath_count>=500){
+	  half_breath_count=0;
+	  led->cdev.brightness = 0;
+      schedule_work(&led->work);
+	  time=5;
+	  breathon=1;
+	} 
+}
+
+void breathing_halfsycle_down(struct qpnp_led_data *led)
+{
+	breathled_event_t  evt;
+	evt=6;
+	half_breath_count++;
+
+    breathing(led);
+
+	if(half_breath_count<250){
+	   breathled_queue_event(evt); 
+	  }
+	else if(half_breath_count>=250){
+	  half_breath_count=0;
+	  led->cdev.brightness = 0;
+      schedule_work(&led->work);
+	  time=5;
+	  breathon=1;
+	} 
+}
+
+
+static int breathled_thread(void *led_)
+{
+
+    struct qpnp_led_data *led= led_;
+	
+	do {
+		breathled_event_t event;
+		
+		wait_event_interruptible(breathled_wait,
+				!queue_empty(&breathled_queue) || kthread_should_stop());
+
+		if (kthread_should_stop())
+				break;
+	
+
+		spin_lock_irq(&breathled_queue_lock);
+		event = 0;
+		if (!queue_empty(&breathled_queue))
+			event = queue_get_event(&breathled_queue);
+		spin_unlock_irq(&breathled_queue_lock);
+		
+		//printk(KERN_ERR "apm: an event queue overflowed\n");
+		switch (event) {
+		case 0: //  constant on
+			{
+		     led->cdev.brightness = 20;
+			 schedule_work(&led->work);
+		    }
+			break;
+		case 1: //breathing 
+			{
+			  breathled_event_t  evt;
+              evt=1;
+			  breathing(led);
+			  if(stop_breathing!=5)
+			  breathled_queue_event(evt);
+			}
+			break;
+       case 3: //half breath on
+	   	  	{
+			  breathing_halfsycle_up(led);
+			}
+			break;
+		case 4: //one cycle
+			{
+			  breathing_onesycle(led);
+			}
+			break;
+		case 5:
+			{
+			   led->cdev.brightness = 0;
+			   schedule_work(&led->work);	
+			}
+				break;
+		case 6:
+			{
+			breathing_halfsycle_down(led);
+			breathon=0;
+			time=5000;
+		    }
+	    default:
+			break;
+		}
+		
+	} while (1);
+
+	return 0;
+}
+
+
+#endif
 static int
 qpnp_led_masked_write(struct qpnp_led_data *led, u16 addr, u8 mask, u8 val)
 {
@@ -1807,7 +2088,6 @@ static enum led_brightness qpnp_led_get(struct led_classdev *led_cdev)
 	struct qpnp_led_data *led;
 
 	led = container_of(led_cdev, struct qpnp_led_data, cdev);
-
 	return led->cdev.brightness;
 }
 
@@ -2526,6 +2806,169 @@ static ssize_t blink_store(struct device *dev,
 	return count;
 }
 
+static ssize_t start_breath_store(struct device *dev,
+			struct device_attribute *attr,
+			const char *buf, size_t count)
+{
+	struct qpnp_led_data *led;
+	unsigned long state;
+	struct led_classdev *led_cdev = dev_get_drvdata(dev);
+	ssize_t ret = -EINVAL;
+#ifdef ZTEMT_BRATHING_LED
+    breathled_event_t  evt;
+#endif
+	ret = kstrtoul(buf, 10, &state);
+	if (ret)
+		return ret;
+
+	led = container_of(led_cdev, struct qpnp_led_data, cdev);
+
+	/* '1' to enable torch mode; '0' to switch to flash mode */
+	if (state == 1)
+		{
+		evt=1;
+		stop_breathing=0;
+		breathled_queue_event(evt);
+		}
+    else if(state == 0)
+    	{
+		unsigned long flags;
+		spin_lock_irqsave(&breathled_queue_lock, flags);
+		//breathled_queue_clear(&breathled_queue);
+		time=5;
+		stop_breathing=5;
+		breathon=1;
+	    spin_unlock_irqrestore(&breathled_queue_lock, flags);
+		}
+	else if(state ==2)
+		{
+		evt=3; //half sycle
+		breathled_queue_event(evt);
+
+	    }
+	else if(state == 3)
+		{
+		evt=0;//constant on
+		breathled_queue_event(evt);
+	    }
+	else if (state ==4)
+		{
+		evt=4;// one sycle
+		breathled_queue_event(evt);
+	    }
+	 else if (state ==5)
+	 	{
+		 evt=5; //off
+		 breathled_queue_event(evt);
+
+	    }
+	  else if(state ==6)
+	  	{
+		  evt=6; //half sycle down
+		  breathled_queue_event(evt);
+
+	    }
+	return count;
+}
+
+#if 0
+static int fade_parameter_convert(int temp_start)
+{
+	 int temp_end;
+	 switch (temp_start) {
+		case 0:
+	    temp_end=0;
+			break;
+		case 1:
+	    temp_end=256;
+			break;
+		case 2:
+	    temp_end=512;
+			break; 
+		case 3:
+	    temp_end=1024;
+			break;
+		case 4:
+	    temp_end=2048;
+			break;	
+		case 5:
+	    temp_end=4096;
+			break;	
+		case 6:
+	    temp_end=8192;
+			break;	
+		case 7:
+	    temp_end=16384;
+			break;		
+		default:
+	      return -EINVAL;    
+     }
+	 return temp_end;
+}
+#endif
+
+static ssize_t fade_parameter_store(struct device *dev,
+	struct device_attribute *attr,
+	const char *buf, size_t count)
+{
+	strncpy(fade_parameter, buf, FADE_PARAM_LEN);
+	sscanf(fade_parameter, "%d %d %d", &fade_time, &fullon_time, &fulloff_time);
+	//ztemt_rgb_led_debug("%s : %d : fade_time=%d , fullon_time=%d , fulloff_time=%d\n",__func__,__LINE__,fade_time,fullon_time,fulloff_time);
+	return count;
+}
+
+static ssize_t fade_parameter_show(struct device *dev,
+	struct device_attribute *attr, char *buf)
+{
+ 	snprintf(fade_parameter, FADE_PARAM_LEN,	"%4d %4d %4d\n",
+			fade_time, fullon_time, fulloff_time);
+	return sprintf(buf, "%s\n", fade_parameter);
+}
+
+static ssize_t grade_parameter_store(struct device *dev,
+	struct device_attribute *attr,
+	const char *buf, size_t count)
+{
+	strncpy(grade_parameter, buf, GRADE_PARAM_LEN);
+	sscanf(grade_parameter, "%d %d", &min_grade, &max_grade);
+	//ztemt_rgb_led_debug("%s : %d : min_grade=%d , max_grade=%d\n",__func__,__LINE__,min_grade,max_grade);
+	return count;
+}
+
+static ssize_t grade_parameter_show(struct device *dev,
+	struct device_attribute *attr, char *buf)
+{
+	snprintf(grade_parameter, GRADE_PARAM_LEN,	"%4d %4d\n",
+			min_grade, max_grade);
+	return sprintf(buf, "%s\n", grade_parameter);
+}
+
+static ssize_t outn_store(struct device *dev,
+	struct device_attribute *attr,
+	const char *buf, size_t count)
+{
+	sscanf(buf, "%d", &ztemt_channel);
+	//ztemt_rgb_led_debug("%s : %d : ztemt_channel=%d \n",__func__,__LINE__,ztemt_channel);	  	  
+	return count;
+}
+
+static ssize_t outn_show(struct device *dev,
+	struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n",ztemt_channel);	
+}
+
+
+
+
+#ifdef ZTEMT_BRATHING_LED
+static DEVICE_ATTR(fade_parameter, 0664, fade_parameter_show, fade_parameter_store);
+static DEVICE_ATTR(grade_parameter, 0664, grade_parameter_show, grade_parameter_store);
+static DEVICE_ATTR(outn, 0664, outn_show, outn_store);
+#endif
+
+
+static DEVICE_ATTR(start_breath, 0664, NULL, start_breath_store);
 static DEVICE_ATTR(led_mode, 0664, NULL, led_mode_store);
 static DEVICE_ATTR(strobe, 0664, NULL, led_strobe_type_store);
 static DEVICE_ATTR(pwm_us, 0664, NULL, pwm_us_store);
@@ -2542,6 +2985,20 @@ static struct attribute *led_attrs[] = {
 	&dev_attr_strobe.attr,
 	NULL
 };
+
+static struct attribute *breathled_attrs[]={
+   &dev_attr_start_breath.attr, 	
+#ifdef ZTEMT_BRATHING_LED
+  &dev_attr_fade_parameter.attr,
+  &dev_attr_grade_parameter.attr,
+  &dev_attr_outn.attr,
+	   //&dev_attr_brightness_2.attr,
+#endif
+   	NULL
+};
+
+
+
 
 static const struct attribute_group led_attr_group = {
 	.attrs = led_attrs,
@@ -2569,6 +3026,9 @@ static struct attribute *blink_attrs[] = {
 
 static const struct attribute_group pwm_attr_group = {
 	.attrs = pwm_attrs,
+};
+static const struct attribute_group breathled_attr_group={
+    .attrs = breathled_attrs,
 };
 
 static const struct attribute_group lpg_attr_group = {
@@ -3659,6 +4119,9 @@ static int qpnp_leds_probe(struct spmi_device *spmi)
 	int rc, i, num_leds = 0, parsed_leds = 0;
 	const char *led_label;
 	bool regulator_probe = false;
+#if 1
+   int ret;
+#endif
 
 	node = spmi->dev.of_node;
 	if (node == NULL)
@@ -3763,6 +4226,16 @@ static int qpnp_leds_probe(struct spmi_device *spmi)
 						"Unable to read mpp config data\n");
 				goto fail_id_check;
 			}
+#ifdef ZTEMT_BRATHING_LED
+			breathled_tsk = kthread_create(breathled_thread, led, "breathled");
+			if (IS_ERR(breathled_tsk)) {
+			   ret = PTR_ERR(breathled_tsk);
+			   breathled_tsk = NULL;
+			   goto out;
+			}
+			wake_up_process(breathled_tsk);
+
+#endif		
 		} else if (strcmp(led_label, "gpio") == 0) {
 			rc = qpnp_get_config_gpio(led, temp);
 			if (rc < 0) {
@@ -3801,7 +4274,15 @@ static int qpnp_leds_probe(struct spmi_device *spmi)
 						 led->id, rc);
 			goto fail_id_check;
 		}
+#if 1
+      if (strncmp(led_label, "mpp", sizeof("mpp")) == 0){
+		rc = sysfs_create_group(&led->cdev.dev->kobj,
+						&breathled_attr_group);
+		if (rc)
+			goto fail_id_check;
 
+      	}
+#endif
 		if (led->id == QPNP_ID_FLASH1_LED0 ||
 			led->id == QPNP_ID_FLASH1_LED1) {
 			rc = sysfs_create_group(&led->cdev.dev->kobj,
@@ -3882,7 +4363,7 @@ fail_id_check:
 		mutex_destroy(&led_array[i].lock);
 		led_classdev_unregister(&led_array[i].cdev);
 	}
-
+out:
 	return rc;
 }
 

@@ -21,6 +21,8 @@
 #define __KXTJ9_H__
 
 #define KXTJ9_I2C_ADDR		0x0F
+#define ACCEL_SYSCLS_NAME		"acc"
+#define ACCEL_SYSDEV_NAME		"acc"
 
 struct kxtj9_platform_data {
 	unsigned int min_interval;	/* minimum poll interval (in milli-seconds) */

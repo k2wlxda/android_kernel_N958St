@@ -2378,8 +2378,11 @@ wcnss_trigger_config(struct platform_device *pdev)
 	struct resource *res;
 	int is_pronto_vt;
 	int pil_retry = 0;
+	int has_pronto_hw = 1;
+#if 0
 	int has_pronto_hw = of_property_read_bool(pdev->dev.of_node,
 							"qcom,has-pronto-hw");
+#endif
 
 	is_pronto_vt = of_property_read_bool(pdev->dev.of_node,
 							"qcom,is-pronto-vt");
@@ -2407,6 +2410,11 @@ wcnss_trigger_config(struct platform_device *pdev)
 	penv->wcnss_hw_type = (has_pronto_hw) ? WCNSS_PRONTO_HW : WCNSS_RIVA_HW;
 	penv->wlan_config.use_48mhz_xo = has_48mhz_xo;
 	penv->wlan_config.is_pronto_vt = is_pronto_vt;
+
+	if(has_pronto_hw)
+		dev_err(&pdev->dev, "WCNSS_PRONTO_HW.\n");
+	else
+		dev_err(&pdev->dev, "WCNSS_RIVA_HW.\n");
 
 	if (WCNSS_CONFIG_UNSPECIFIED == has_autodetect_xo && has_pronto_hw) {
 		has_autodetect_xo = of_property_read_bool(pdev->dev.of_node,

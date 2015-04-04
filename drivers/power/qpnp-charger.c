@@ -389,7 +389,21 @@ struct qpnp_chg_chip {
 	struct work_struct		reduce_power_stage_work;
 	bool				power_stage_workaround_running;
 	bool				power_stage_workaround_enable;
+	#ifdef CONFIG_ZTEMT_POWER_DEBUG
+	struct delayed_work power_debug_work;
+	#endif
 };
+#ifdef CONFIG_ZTEMT_POWER_DEBUG
+#include <../../arch/arm/mach-msm/clock.h>
+#define POWER_MONITOR_PERIOD_MS	10000
+#define DRV_NAME "zte_power_debug"
+static int power_debug_switch=1;
+static struct qpnp_chg_chip *chip_temp;
+extern int msm_show_resume_irq_mask; //used to print the resume irq
+extern void global_print_active_locks( void );
+//print suspend_states
+//extern int suspend_stats_debug(void);
+#endif
 
 static void
 qpnp_chg_set_appropriate_battery_current(struct qpnp_chg_chip *chip);

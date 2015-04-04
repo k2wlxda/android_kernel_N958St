@@ -16,7 +16,7 @@
 
 #define TOMBAK_MBHC_NC	0
 #define TOMBAK_MBHC_NO	1
-#define WCD_MBHC_DEF_BUTTONS 5
+#define WCD_MBHC_DEF_BUTTONS 3
 
 enum wcd_mbhc_plug_type {
 	MBHC_PLUG_TYPE_INVALID = -1,
@@ -56,7 +56,8 @@ struct wcd_mbhc_intr {
 	int mbhc_sw_intr;
 	int mbhc_btn_press_intr;
 	int mbhc_btn_release_intr;
-	int mbhc_hs_ins_rem_intr;
+	int mbhc_hs_ins_intr;
+	int mbhc_hs_rem_intr;
 	int hph_left_ocp;
 	int hph_right_ocp;
 };
@@ -66,6 +67,8 @@ struct wcd_mbhc_cb {
 };
 
 struct wcd_mbhc {
+	/* Delayed work to report long button press */
+	struct delayed_work mbhc_btn_dwork;
 	int buttons_pressed;
 	struct wcd_mbhc_config *mbhc_cfg;
 	const struct wcd_mbhc_cb *mbhc_cb;

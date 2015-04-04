@@ -525,8 +525,22 @@ int msm_sensor_match_id(struct msm_sensor_ctrl_t *s_ctrl)
 	CDBG("%s: read id: 0x%x expected id 0x%x:\n", __func__, chipid,
 		slave_info->sensor_id);
 	if (chipid != slave_info->sensor_id) {
-		pr_err("msm_sensor_match_id chip id doesnot match\n");
-		return -ENODEV;
+         if( slave_info->sensor_id==0x5648)		
+		{
+		    pr_err("msm_sensor_match_id : sensor is OV5648\n");
+			if(chipid== ( slave_info->sensor_id&0xf))
+				return rc;
+			else{
+				pr_err("msm_sensor_match_id chip id doesnot match\n");
+				return -ENODEV;
+			}
+				
+         	}
+	else
+		{
+			pr_err("msm_sensor_match_id chip id doesnot match\n");
+			return -ENODEV;
+		}
 	}
 	return rc;
 }
@@ -1006,6 +1020,47 @@ int msm_sensor_config(struct msm_sensor_ctrl_t *s_ctrl, void __user *argp)
 			rc = -EFAULT;
 			break;
 		}
+		//added by congshan start
+#if (defined(CONFIG_N958_CAMERA)||defined(CONFIG_N918X_CAMERA))
+		if (!strncmp(dev_name(&s_ctrl->pdev->dev),"0.qcom,camera",sizeof(dev_name(&s_ctrl->pdev->dev)))){
+			enum msm_camera_i2c_reg_addr_type temp_addr_type;
+			int32_t lens_position = 500;
+			uint16_t addr = 0;
+			uint16_t data = 0;
+			//printk("sssssssss\n");
+			lens_position = 300;
+			lens_position = lens_position | 0xF400;
+			addr = (lens_position & 0xFF00) >> 8;
+			lens_position = 300;
+			data = lens_position & 0xFF;
+			temp_addr_type = s_ctrl->sensor_i2c_client->addr_type;
+			s_ctrl->sensor_i2c_client->cci_client->sid = 0x18 >> 1;
+			s_ctrl->sensor_i2c_client->addr_type = MSM_CAMERA_I2C_BYTE_ADDR;
+			s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(
+				s_ctrl->sensor_i2c_client, addr, data,MSM_CAMERA_I2C_BYTE_DATA);
+			msleep(10);
+			lens_position = 200;
+			lens_position = lens_position | 0xF400;
+			addr = (lens_position & 0xFF00) >> 8;
+			lens_position = 200;
+			data = lens_position & 0xFF;
+			s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(
+				s_ctrl->sensor_i2c_client, addr, data,MSM_CAMERA_I2C_BYTE_DATA);
+			msleep(10);
+			lens_position = 100;
+			lens_position = lens_position | 0xF400;
+			addr = (lens_position & 0xFF00) >> 8;
+			lens_position = 100;
+			data = lens_position & 0xFF;
+			s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(
+				s_ctrl->sensor_i2c_client, addr, data,MSM_CAMERA_I2C_BYTE_DATA);
+			msleep(10);
+			s_ctrl->sensor_i2c_client->cci_client->sid =
+				s_ctrl->sensordata->slave_info->sensor_slave_addr >> 1;
+			s_ctrl->sensor_i2c_client->addr_type = temp_addr_type;
+		}
+#endif
+		//added by congshan end
 		if (s_ctrl->func_tbl->sensor_power_down) {
 			if (s_ctrl->sensordata->misc_regulator)
 				msm_sensor_misc_regulator(s_ctrl, 0);

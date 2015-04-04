@@ -501,6 +501,7 @@ enum msm_sensor_cfg_type_t {
 	CFG_SET_AUTOFOCUS,
 	CFG_CANCEL_AUTOFOCUS,
 	CFG_SET_STREAM_TYPE,
+	CFG_SET_OTP_INIT_PARAM, // zte-fuyipeng modify for set otp param
 };
 
 enum msm_actuator_cfg_type_t {

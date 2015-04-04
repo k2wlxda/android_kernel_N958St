@@ -2574,7 +2574,15 @@ static struct mux_clk gcc_debug_mux = {
 		CLK_INIT(gcc_debug_mux.c),
 	},
 };
+#if 0
+//added by congshan start
+static struct clk_lookup msm_clocks_gcc_8916_eeprom[] = {
 
+	CLK_LOOKUP_OF("cam_src_clk", mclk0_clk_src,      "20.qcom,eeprom"),
+	CLK_LOOKUP_OF("cam_clk", gcc_camss_mclk0_clk,      "20.qcom,eeprom"),
+};
+//added by congshan end
+#endif
 /* Clock lookup */
 static struct clk_lookup msm_clocks_lookup[] = {
 	/* PLLs */
@@ -2723,6 +2731,9 @@ static struct clk_lookup msm_clocks_gcc_8916_crypto[] = {
 	CLK_LOOKUP_OF("iface_clk",    gcc_crypto_ahb_clk,  "scm"),
 	CLK_LOOKUP_OF("bus_clk",      gcc_crypto_axi_clk,  "scm"),
 	CLK_LOOKUP_OF("core_clk_src", crypto_clk_src,      "scm"),
+	
+	CLK_LOOKUP_OF("cam_src_clk", mclk0_clk_src,      "20.qcom,eeprom"),
+	CLK_LOOKUP_OF("cam_clk", gcc_camss_mclk0_clk,      "20.qcom,eeprom"),
 };
 
 static int msm_gcc_probe(struct platform_device *pdev)
@@ -2814,7 +2825,15 @@ static int msm_gcc_probe(struct platform_device *pdev)
 				 ARRAY_SIZE(msm_clocks_gcc_8916_crypto));
 	if (ret)
 		return ret;
-
+	#if 0
+	//added by congshan start
+	ret = of_msm_clock_register(pdev->dev.of_node,
+					 msm_clocks_gcc_8916_eeprom,
+					 ARRAY_SIZE(msm_clocks_gcc_8916_eeprom));
+	if (ret)
+		return ret;
+	//added by congshan end
+	#endif
 	clk_set_rate(&apss_ahb_clk_src.c, 19200000);
 	clk_prepare_enable(&apss_ahb_clk_src.c);
 

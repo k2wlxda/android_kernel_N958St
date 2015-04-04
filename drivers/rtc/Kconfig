@@ -1249,6 +1249,12 @@ config RTC_DRV_SNVS
 	   This driver can also be built as a module, if so, the module
 	   will be called "rtc-snvs".
 
+config ZTE_POWEROFF_ALARM
+    tristate "zte poweroff alarm macro"
+    depends on RTC_CLASS
+    help 
+       open poweroffalarm function when is "y"
+
 config RTC_DRV_QPNP
 	tristate "Qualcomm QPNP PMIC RTC"
 	depends on SPMI && OF_SPMI && MSM_QPNP_INT

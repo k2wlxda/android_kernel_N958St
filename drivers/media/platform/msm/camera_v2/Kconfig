@@ -249,3 +249,12 @@ config MSM_GEMINI
 	depends on MSMB_CAMERA && (ARCH_MSM7X30 || ARCH_MSM8X60 || ARCH_MSM8960)
 	---help---
 	  Enables support for the Gemini JPEG encoder engine for 8x60.
+config N958_CAMERA
+	bool "zte n958 camera"
+
+config N918X_CAMERA
+	bool "zte 918x  camera"
+
+config CAMERA_FLASH_SGM3141
+	bool "camera flash sgm3141"	
+	

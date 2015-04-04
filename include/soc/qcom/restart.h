@@ -18,7 +18,11 @@
 #define RESTART_DLOAD  0x1
 
 void msm_set_restart_mode(int mode);
+void msm_set_download_mode(int mode);
 extern int pmic_reset_irq;
+#ifdef CONFIG_ZTE_POWEROFF_ALARM
+extern void *restart_reason;
+#endif
 
 #endif
 
