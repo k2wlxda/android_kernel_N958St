@@ -1,0 +1,25 @@
+/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&soc {
+	i2c@78b7000 { /* BLSP1 QUP3 */
+        aw9106b_led@5b {
+        	aw9106b_led,name = "aw9106b";
+           	compatible = "aw,9106b";
+           	reg = <0x5b>;
+           	aw9106b_led,power-gpio = <&msm_gpio 17 0x00>;
+            pinctrl-names = "aw9106b_active","aw9106b_suspend";
+		    pinctrl-0 = <&aw9106b_ctl_active>;
+		    pinctrl-1 = <&aw9106b_ctl_suspend>;
+        };	
+	  };
+};

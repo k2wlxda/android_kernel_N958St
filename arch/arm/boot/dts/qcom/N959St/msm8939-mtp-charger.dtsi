@@ -1,0 +1,88 @@
+/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+
+&soc {
+	 i2c@78b8000 { /* BLSP1 QUP4   */
+               lc709203f@0x0b{ /* battery monitor fuel gauge lc709203f*/
+                       compatible = "on,lc709203f";
+                       reg = <0x0b>;
+                       interrupt-parent = <&msm_gpio>;
+                       interrupts = <51 8>;
+                       interrupt-names = "lc709203f_irq";
+                       pinctrl-names = "default";
+                       pinctrl-0 = <&lc709203f_int_default>;
+                       //regulator-name = "lc709203f_reg";
+                       qcom,lc709203f-irq = <&msm_gpio 51 0x01>;                      
+                       qcom,voltage-low-threshold = <3420>;
+                       qcom,soc-low-threshold = <0>;
+                       qcom,low-soc-calculate-soc-threshold = <15>;
+                       qcom,low-voltage-calculate-soc-ms = <1000>;
+                       qcom,low-soc-calculate-soc-ms = <5000>;
+                       qcom,calculate-soc-ms = <20000>;
+			  qcom,resume-soc = <99>;
+			   
+                };
+        };
+
+        tlmm_pinmux: pinctrl@1000000 {
+		compatible = "qcom,msm-tlmm-8916";
+		reg = <0x1000000 0x300000>;
+		interrupts = <0 208 0>;
+
+		lc709203f_int_pin {
+			qcom,pins = <&gp 51>;
+			qcom,num-grp-pins = <1>;
+			qcom,pin-func = <0>;
+			label = "lc709203f_int_gpio";
+			lc709203f_int_default: lc709203f_int_default {
+				drive-strength = <2>;	/* 2 MA */
+				bias-pull-up;		/* PULL UP*/
+			};
+		};
+	};
+	
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

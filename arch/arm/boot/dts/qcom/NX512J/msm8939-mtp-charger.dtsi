@@ -1,0 +1,79 @@
+/* Copyright (c) 2015, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&soc {
+	i2c@78b8000 { /* BLSP1 QUP4   */
+			/*
+			 *CONFIG_ZTEMT_BQ24296_CHARGE 
+			 */
+			bq24296m_supply: bq24296-chg@6B {
+				compatible = "ti,bq24296-chg";
+				reg = <0x6B>;		
+				interrupt-parent = <&msm_gpio>;
+				qcom,irq-gpio = <&msm_gpio 62 0x00>;
+				qcom,en-gpio = <&msm_gpio 52 0x00>;
+				interrupt-names = "bq24296_irq";
+				enable-names = "bq24296_enable";
+				pinctrl-names = "bq24296_default";
+				pinctrl-0 = <&bq24296_int_default &bq24296_en_default>;
+				qcom,bq24296-vadc = <&pm8916_vadc>;
+				qcom,bq24296-adc_tm = <&pm8916_adc_tm>;
+				regulator-name = "bq24296_otg_vreg";
+
+				bq24296,vusb-min = <4580>;    // 80mv step  
+				bq24296,v-cutoff-mv = <3500>;  
+				bq24296,vbattmax-mv  = <4400>;  
+				/*1.5A*/
+				bq24296,ibatmax-ma = <1536>;  
+				bq24296,ibatterm-ma = <128>;  
+				bq24296,iusbmax-ma =<1500>;
+				bq24296,ibattprechg-ma = <256>;  
+				bq24296,watchdog-reset-ms = <160000>;  
+				bq24296,max-charger-cycle-mins = <720>;  
+				bq24296,bq-recharge-soc = <99>;
+				bq24296,bq-recharge-vol = <4350>;
+				bq24296,boost-output-chg-mv = <5190>;  
+				bq24296,boost-hot-temp-threshold = <55>;  
+				bq24296,boost-cold-temp-threshold = <0>;  
+				bq24296,thermal_regulation-threshold = <120>;  
+				bq24296,bq-charge-sense = <68>;
+			};	
+	};
+ 
+	tlmm_pinmux: pinctrl@1000000 {
+		compatible = "qcom,msm-tlmm-8939", "qcom,msm-tlmm-8916";
+		reg = <0x1000000 0x300000>;
+		interrupts = <0 208 0>;
+		/*CONFIG_ZTEMT_BQ24296_CHARGE*/
+		bq24296_en_pin {
+				qcom,pins = <&gp 52>;
+				qcom,num-grp-pins = <1>;
+				qcom,pin-func = <0>;
+				label = "bq24296_en_gpio";
+				bq24296_en_default: bq24296_en_default {
+					drive-strength = <2>;	/* 2 MA */
+					bias-disable;		/* PULL UP*/
+			};
+		};
+			
+		bq24296_int_pin {
+				qcom,pins = <&gp 62>;
+				qcom,num-grp-pins = <1>;
+				qcom,pin-func = <0>;
+				label = "bq24296_int_gpio";
+				bq24296_int_default: bq24296_int_default{
+					drive-strength = <2>;	/* 2 MA */
+					bias-pull-up;		/* PULL UP*/
+			};
+		};						
+	};	
+};	

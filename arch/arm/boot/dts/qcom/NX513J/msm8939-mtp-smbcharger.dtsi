@@ -1,0 +1,48 @@
+/* Copyright (c) 2015, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+/*
+ *CONFIG_SMB1351_USB_CHARGER 
+ */
+
+&soc {
+	i2c@78b8000 { /* BLSP1 QUP4   */
+		smb1351_otg_supply: smb1351-charger@57 {
+			compatible = "qcom,smb1351-charger";
+			reg = <0x57>;
+			interrupt-parent = <&msm_gpio>;
+			interrupts = <62 2>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&smb_int_default>;
+			qcom,float-voltage-mv = <4350>;
+			qcom,recharge-mv = <100>;
+			qcom,iterm-ma = <128>;	
+			regulator-name = "smb1351_otg_vreg";
+			qcom,fastchg-current-max-ma = <3500>; 
+		};	
+	};
+
+};	
+
+&usb_otg {
+       qcom,hsusb-otg-mode = <3>;
+       qcom,usbid-gpio = <&msm_gpio 110 0>;
+       pinctrl-names = "default";
+       pinctrl-0 = <&usbid_default>;
+       vbus_otg-supply = <&smb1351_otg_supply>;
+};
+
+&pm8916_chg {
+	status = "ok";
+	qcom,use-external-charger;
+};
+

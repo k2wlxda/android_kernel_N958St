@@ -1,0 +1,36 @@
+/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
+*
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License version 2 and
+* only version 2 as published by the Free Software Foundation.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*/
+
+/dts-v1/;
+
+#include "msm8916-mtp.dtsi"
+
+#include "N958St/msm8916-mtp-sdhc2.dtsi"
+
+#include "N958St/msm8916-pinctrl-ztemt.dtsi"
+#include "N958St/msm8916-mtp-lcd.dtsi"
+#include "N958St/msm8916-mtp-tp.dtsi"
+#include "N958St/msm8916-mtp-keys.dtsi"
+#include "N958St/msm8916-camera-sensor-mtp.dtsi"
+#include "N958St/msm8916-mtp-breathlight.dtsi"
+#include "N958St/msm8916-mtp-sensor.dtsi"
+#include "N958St/msm8916-vbus-otg.dtsi"
+#include "N958St/msm8916-mtp-charger.dtsi"
+#include "N958St/msm8916-mtp-bq24296.dtsi"
+#include "msm8916-memory.dtsi"
+
+/ {
+	model = "Qualcomm Technologies, Inc. MSM 8916 MTP";
+	compatible = "qcom,msm8916-mtp", "qcom,msm8916", "qcom,mtp";
+	qcom,board-id = <8 0>;
+};
+

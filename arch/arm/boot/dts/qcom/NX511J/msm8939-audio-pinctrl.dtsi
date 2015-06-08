@@ -1,0 +1,69 @@
+/* Copyright (c) 2013-2014, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&soc {
+	tlmm_pinmux: pinctrl@1000000 {
+		compatible = "qcom,msm-tlmm-8939", "qcom,msm-tlmm-8916";
+		reg = <0x1000000 0x300000>;
+		interrupts = <0 208 0>;
+		
+		cross-conn-det {
+			qcom,pins = <&gp 50>;
+			qcom,num-grp-pins = <1>;
+			qcom,pin-func = <0>;
+			label = "cross-conn-det-sw";
+			cross_conn_det_act: lines_on {
+				drive-strength = <8>;
+				output-low;
+				bias-pull-down;
+			};
+			cross_conn_det_sus: lines_off {
+				drive-strength = <2>;
+				bias-disable;
+			};
+		};
+		ext-pa-ctrl {
+			qcom,pins = <&gp 116>;
+			qcom,num-grp-pins = <1>;
+			qcom,pin-func = <0>;
+			label = "ext-pa-ctrl-sw";
+			ext_pa_ctrl_act: lines_on {
+				drive-strength = <8>;
+				output-low;
+				bias-pull-down;
+			};
+			ext_pa_ctrl_sus: lines_off {
+				drive-strength = <2>;
+				bias-disable;
+			};
+		};
+
+	};
+};
+
+&pm8916_gpios {
+
+	gpio@c200 { /* GPIO 3 */
+		/* HPHR_CTRL */
+		reg =<0xc200 0x100>;
+		qcom,pin-num=<3>;
+		qcom,mode = <1>; /* QPNP_PIN_MODE_DIG_OUT */
+		qcom,output-type = <0>;
+		qcom,invert = <0>;
+		qcom,pull = <5>; /* QPNP_PIN_PULL_NO */
+		qcom,vin-sel = <2>; /* QPNP_PIN_VIN2 */
+		qcom,out-strength = <2>;
+		qcom,src-sel = <0>; /* QPNP_PIN_SEL_FUNC_1 */
+		qcom,master-en = <1>;
+	};
+	
+};

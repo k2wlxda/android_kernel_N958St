@@ -1,0 +1,31 @@
+#
+# FT5336 Touchscreen driver
+#
+
+menuconfig ZTEMT_TOUCHSCREEN_FT5336
+	bool "ZTEMT_TOUCHSCREEN_FT5336"
+	help
+	  Say Y here, and a list of supported touchscreens will be displayed.
+	  This option doesn't affect the kernel.
+
+	  If unsure, say Y.
+
+if ZTEMT_TOUCHSCREEN_FT5336
+
+config FT5336_TOUCHSCREEN_DRIVER
+	tristate "FT5336 touchpanel driver"
+	depends on ZTEMT_TOUCHSCREEN_FT5336
+	default n
+	help
+	  This is the main file for touchpanel driver for FT5336
+	  touchscreens.
+
+	  Say Y here if you have a FT5336 touchscreen connected
+	  to your system.
+
+	  If unsure, say N.
+
+	  To compile this driver as a module, choose M here.
+
+endif
+

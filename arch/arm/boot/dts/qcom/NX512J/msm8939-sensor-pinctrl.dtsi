@@ -1,0 +1,101 @@
+/* Copyright (c) 2013-2014, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&soc {
+	tlmm_pinmux: pinctrl@1000000 {
+		compatible = "qcom,msm-tlmm-8939", "qcom,msm-tlmm-8916";
+		reg = <0x1000000 0x300000>;
+		interrupts = <0 208 0>;
+
+		/*General purpose pins*/
+		gp: gp {
+			qcom,num-pins = <122>;
+			#qcom,pin-cells = <1>;
+			msm_gpio: msm_gpio {
+				compatible = "qcom,msm-tlmm-gp";
+				gpio-controller;
+				#gpio-cells = <2>;
+				interrupt-controller;
+				#interrupt-cells = <2>;
+				num_irqs = <122>;
+			};
+		};
+
+		tmd2772_int_pin {
+			qcom,pins = <&gp 113>;
+			qcom,pin-func = <0>;
+			qcom,num-grp-pins = <1>;
+			label = "tmd2772-irq";
+			tmd2772_default: tmd2772_default {
+				drive-strength = <6>;
+				bias-pull-up;
+			};
+			tmd2772_sleep: tmd2772_sleep {
+				bias-high-impedance;
+			};
+		};
+
+		lsm6ds0_int_pin {
+			qcom,pins = <&gp 115>;
+			qcom,pin-func = <0>;
+			qcom,num-grp-pins = <1>;
+			label = "lsm6ds0-irq";
+			lsm6ds0_default: lsm6ds0_default {
+				drive-strength = <6>;
+				bias-pull-up;
+			};
+			lsm6ds0_sleep: lsm6ds0_sleep {
+				bias-high-impedance;
+			};
+		};
+
+		ak09911_int_pin {
+			qcom,pins = <&gp 69>;
+			qcom,pin-func = <0>;
+			qcom,num-grp-pins = <1>;
+			label = "ak09911-reset";
+			ak09911_default: ak09911_default {
+				drive-strength = <6>;
+				bias-pull-up;
+			};
+			ak09911_sleep: ak09911_sleep {
+				bias-high-impedance;
+			};
+		};
+
+		hall_int_0_pin {
+			qcom,pins = <&gp 49>;
+			qcom,pin-func = <0>;
+			qcom,num-grp-pins = <1>;
+			label = "hall_int_0-irq";
+			hall_int_0_default: hall_int_0_default {
+				drive-strength = <6>;
+			};
+			hall_int_0_sleep: hall_int_0_sleep {
+				drive-strength = <2>;
+			};
+		};
+
+		hall_int_1_pin {
+			qcom,pins = <&gp 112>;
+			qcom,pin-func = <0>;
+			qcom,num-grp-pins = <1>;
+			label = "hall_int_1-irq";
+			hall_int_1_default: hall_int_1_default {
+				drive-strength = <6>;
+			};
+			hall_int_1_sleep: hall_int_1_sleep {
+				drive-strength = <2>;
+			};
+		};
+	};
+};

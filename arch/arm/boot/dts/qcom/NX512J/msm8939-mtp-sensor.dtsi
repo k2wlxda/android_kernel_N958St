@@ -1,0 +1,78 @@
+/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "msm8939-sensor-pinctrl.dtsi"
+
+&soc {
+	i2c@78b6000 { /* BLSP1 QUP2 */
+		ams-sensor@39 {
+			compatible = "ams,ams-sensor";
+			reg = <0x39>;
+			interrupt-parent = <&msm_gpio>;
+			ams,irq-gpio = <&msm_gpio 113 0x2002>;
+			pinctrl-names = "tmd2772_default","tmd2772_sleep";
+			pinctrl-0 = <&tmd2772_default>;
+			pinctrl-1 = <&tmd2772_sleep>;
+			interrupts = <113 0x2002>;
+			vdd-supply = <&pm8916_l17>;
+			vio-supply = <&pm8916_l6>;
+			ams,pul_cnt = <12>;
+			ams,light-percent = <150>;
+		};
+
+		lsm6ds0@0x6A {
+			compatible = "st,lsm6ds0";
+			reg = <0x6A>;
+			pinctrl-names = "lsm6ds0_default","lsm6ds0_sleep";
+			pinctrl-0 = <&lsm6ds0_default>;
+			pinctrl-1 = <&lsm6ds0_sleep>;
+			vdd-supply = <&pm8916_l17>;
+			vio-supply = <&pm8916_l6>;
+			rot-matrix = /bits/ 16 <(0) (-1) (0)
+				(-1) (0) (0)
+				(0) (0) (-1)>;
+			g-poll-interval = <100000>;
+			g-min-interval = <10000>;
+			g-fs-range = <24>;
+			x-poll-interval = <100000>;
+			x-min-interval = <10000>;
+			x-fs-range = <16>;
+			aa-filter-bw = <0>;
+		};
+
+		akm@c {
+			compatible = "ak,ak09911";
+			reg = <0x0c>;
+			pinctrl-names = "ak09911_default","ak09911_sleep";
+			pinctrl-0 = <&ak09911_default>;
+			pinctrl-1 = <&ak09911_sleep>;
+			vdd-supply = <&pm8916_l17>;
+			vio-supply = <&pm8916_l6>;
+			akm,layout = <0x6>;
+			akm,gpio_rstn = <&msm_gpio 69 0x0>;
+			/*akm,auto-report;*/
+		};
+	};
+
+	hall_device_out {
+		compatible = "zte,hall_device";
+		status = "okay";
+		pinctrl-names = "hall_default","hall_sleep";
+		pinctrl-0 = <&hall_int_0_default &hall_int_1_default>;
+		pinctrl-1 = <&hall_int_0_sleep &hall_int_1_sleep>;
+		vio-supply = <&pm8916_l5>;
+		interrupt-parent = <&msm_gpio>;
+		hall_device,hw_device_count = <2>;
+		hall_device,irq-gpio-0 = <&msm_gpio 49 0x2002>;
+		hall_device,irq-gpio-1 = <&msm_gpio 112 0x2002>;
+	};
+};
