@@ -245,7 +245,7 @@ static int cyttsp4_grpdata_show_registers(struct device *dev, u8 *ic_buf,
 	num_read -= dad->ic_grpoffset;
 
 	if (length < num_read) {
-		dev_err(dev, "%s: not sufficient buffer req_bug_len=%d, length=%ld\n",
+		dev_err(dev, "%s: not sufficient buffer req_bug_len=%d, length=%d\n",
 				__func__, num_read, length);
 		return -EINVAL;
 	}
@@ -282,7 +282,7 @@ static int cyttsp4_grpdata_show_operational_regs(struct device *dev, u8 *ic_buf,
 
 	if (length < num_read) {
 		dev_err(dev,
-			"%s: not sufficient buffer req_bug_len=%d, length=%ld\n",
+			"%s: not sufficient buffer req_bug_len=%d, length=%d\n",
 			__func__, num_read, length);
 		return -EINVAL;
 	}
@@ -333,7 +333,7 @@ static int cyttsp4_grpdata_show_sysinfo(struct device *dev, u8 *ic_buf,
 	num_read -= dad->ic_grpoffset;
 
 	if (length < num_read) {
-		dev_err(dev, "%s: not sufficient buffer req_bug_len=%d, length=%ld\n",
+		dev_err(dev, "%s: not sufficient buffer req_bug_len=%d, length=%d\n",
 				__func__, num_read, length);
 		return -EINVAL;
 	}
@@ -477,7 +477,7 @@ static int cyttsp4_grpdata_show_touch_params(struct device *dev, u8 *ic_buf,
 	return_buf_size += config_row_size;
 
 	if (length < return_buf_size) {
-		dev_err(dev, "%s: not sufficient buffer req_buf_len=%d, length=%ld\n",
+		dev_err(dev, "%s: not sufficient buffer req_buf_len=%d, length=%d\n",
 				__func__, return_buf_size, length);
 		rc = -EINVAL;
 		goto cyttsp4_grpdata_show_touch_params_err_change_mode;
@@ -569,7 +569,7 @@ static int cyttsp4_grpdata_show_touch_params_sizes(struct device *dev,
 		block_end = max_size;
 	num_read = block_end - dad->ic_grpoffset;
 	if (length < num_read) {
-		dev_err(dev, "%s: not sufficient buffer %s=%d, %s=%ld\n",
+		dev_err(dev, "%s: not sufficient buffer %s=%d, %s=%d\n",
 				__func__, "req_buf_len", num_read, "length",
 				length);
 		return -EINVAL;
@@ -646,7 +646,7 @@ static int cyttsp4_grpdata_show_test_regs(struct device *dev, u8 *ic_buf,
 	if (dad->test.cur_cmd == CY_CMD_CAT_NULL) {
 		num_read = 1;
 		if (length < num_read) {
-			dev_err(dev, "%s: not sufficient buffer %s=%d, %s=%ld\n",
+			dev_err(dev, "%s: not sufficient buffer %s=%d, %s=%d\n",
 					__func__, "req_buf_len", num_read,
 					"length", length);
 			return -EINVAL;
@@ -670,7 +670,7 @@ static int cyttsp4_grpdata_show_test_regs(struct device *dev, u8 *ic_buf,
 	} else if (dad->test.cur_mode == CY_TEST_MODE_CAT) {
 		num_read = dad->test.cur_status_size;
 		if (length < num_read) {
-			dev_err(dev, "%s: not sufficient buffer %s=%d, %s=%ld\n",
+			dev_err(dev, "%s: not sufficient buffer %s=%d, %s=%d\n",
 					__func__, "req_buf_len", num_read,
 					"length", length);
 			return -EINVAL;
@@ -683,7 +683,7 @@ static int cyttsp4_grpdata_show_test_regs(struct device *dev, u8 *ic_buf,
 			return -EINVAL;
 		}
 
-		dev_vdbg(dev, "%s: GRP=TEST_REGS: num_rd=%d at ofs=%ld + grpofs=%d\n",
+		dev_vdbg(dev, "%s: GRP=TEST_REGS: num_rd=%d at ofs=%d + grpofs=%d\n",
 				__func__, num_read, dad->si->si_ofs.cmd_ofs,
 				dad->ic_grpoffset);
 
@@ -736,7 +736,7 @@ static int cyttsp4_grpdata_show_tthe_test_regs(struct device *dev, u8 *ic_buf,
 	if (dad->test.cur_cmd == CY_CMD_CAT_NULL) {
 		num_read = dad->test.cur_status_size;
 		if (length < num_read) {
-			dev_err(dev, "%s: not sufficient buffer %s=%d, %s=%ld\n",
+			dev_err(dev, "%s: not sufficient buffer %s=%d, %s=%d\n",
 					__func__, "req_buf_len", num_read,
 					"length", length);
 			return -EINVAL;
@@ -759,12 +759,12 @@ static int cyttsp4_grpdata_show_tthe_test_regs(struct device *dev, u8 *ic_buf,
 			|| dad->test.cur_mode == CY_TEST_MODE_SYSINFO) {
 		num_read = dad->test.cur_status_size;
 		if (length < num_read) {
-			dev_err(dev, "%s: not sufficient buffer %s=%d, %s=%ld\n",
+			dev_err(dev, "%s: not sufficient buffer %s=%d, %s=%d\n",
 					__func__, "req_buf_len", num_read,
 					"length", length);
 			return -EINVAL;
 		}
-		dev_vdbg(dev, "%s: GRP=TEST_REGS: num_rd=%d at ofs=%ld + grpofs=%d\n",
+		dev_vdbg(dev, "%s: GRP=TEST_REGS: num_rd=%d at ofs=%d + grpofs=%d\n",
 				__func__, num_read, dad->si->si_ofs.cmd_ofs,
 				dad->ic_grpoffset);
 		rc = cyttsp4_read(dad->ttsp,
@@ -836,7 +836,7 @@ static ssize_t cyttsp4_ic_grpdata_show(struct device *dev,
 	}
 
 	index += scnprintf(buf + index, CY_MAX_PRBUF_SIZE - index,
-			"(%ld bytes)\n", num_read);
+			"(%d bytes)\n", num_read);
 
 cyttsp4_ic_grpdata_show_error:
 	mutex_unlock(&dad->sysfs_lock);
@@ -892,7 +892,7 @@ static int cyttsp4_test_cmd_mode(struct cyttsp4_device_access_data *dad,
 	u8 mode;
 
 	if (length < CY_NULL_CMD_MODE_INDEX + 1)  {
-		dev_err(dev, "%s: %s length=%ld\n", __func__,
+		dev_err(dev, "%s: %s length=%d\n", __func__,
 				"Buffer length is not valid", length);
 		return -EINVAL;
 	}
@@ -971,7 +971,7 @@ static int cyttsp4_test_tthe_cmd_mode(struct cyttsp4_device_access_data *dad,
 	int new_mode;
 
 	if (length < CY_NULL_CMD_MODE_INDEX + 1)  {
-		dev_err(dev, "%s: %s length=%ld\n", __func__,
+		dev_err(dev, "%s: %s length=%d\n", __func__,
 				"Buffer length is not valid", length);
 		return -EINVAL;
 	}
@@ -1039,7 +1039,7 @@ static int cyttsp4_grpdata_store_operational_regs(struct device *dev,
 	int rc, rc2 = 0;
 
 	if ((cmd_ofs + length) > dad->si->si_ofs.rep_ofs) {
-		dev_err(dev, "%s: %s length=%ld\n", __func__,
+		dev_err(dev, "%s: %s length=%d\n", __func__,
 				"Buffer length is not valid", length);
 		return -EINVAL;
 	}
@@ -1090,7 +1090,7 @@ static int cyttsp4_grpdata_store_test_regs(struct device *dev, u8 *ic_buf,
 
 	/* Caller function guaranties, length is not bigger than ic_buf size */
 	if (length < CY_CMD_INDEX + 1) {
-		dev_err(dev, "%s: %s length=%ld\n", __func__,
+		dev_err(dev, "%s: %s length=%d\n", __func__,
 				"Buffer length is not valid", length);
 		return -EINVAL;
 	}
@@ -1098,7 +1098,7 @@ static int cyttsp4_grpdata_store_test_regs(struct device *dev, u8 *ic_buf,
 	dad->test.cur_cmd = ic_buf[CY_CMD_INDEX];
 	if (dad->test.cur_cmd == CY_CMD_CAT_NULL) {
 		if (length < CY_NULL_CMD_INDEX + 1) {
-			dev_err(dev, "%s: %s length=%ld\n", __func__,
+			dev_err(dev, "%s: %s length=%d\n", __func__,
 					"Buffer length is not valid", length);
 			return -EINVAL;
 		}
@@ -1110,18 +1110,18 @@ static int cyttsp4_grpdata_store_test_regs(struct device *dev, u8 *ic_buf,
 			break;
 		case CY_NULL_CMD_MODE:
 			if (length < CY_NULL_CMD_MODE_INDEX + 1) {
-				dev_err(dev, "%s: %s length=%ld\n", __func__,
+				dev_err(dev, "%s: %s length=%d\n", __func__,
 						"Buffer length is not valid",
 						length);
 				return -EINVAL;
 			}
 			dev_vdbg(dev, "%s: Set cmd mode=%02X\n", __func__,
 					ic_buf[CY_NULL_CMD_MODE_INDEX]);
-			cyttsp4_test_cmd_mode(dad, ic_buf, (int)(length));
+			cyttsp4_test_cmd_mode(dad, ic_buf, length);
 			break;
 		case CY_NULL_CMD_STATUS_SIZE:
 			if (length < CY_NULL_CMD_SIZE_INDEX + 1) {
-				dev_err(dev, "%s: %s length=%ld\n", __func__,
+				dev_err(dev, "%s: %s length=%d\n", __func__,
 						"Buffer length is not valid",
 						length);
 				return -EINVAL;
@@ -1129,7 +1129,7 @@ static int cyttsp4_grpdata_store_test_regs(struct device *dev, u8 *ic_buf,
 			dad->test.cur_status_size =
 				ic_buf[CY_NULL_CMD_SIZEL_INDEX]
 				+ (ic_buf[CY_NULL_CMD_SIZEH_INDEX] << 8);
-			dev_vdbg(dev, "%s: test-cur_status_size=%ld\n",
+			dev_vdbg(dev, "%s: test-cur_status_size=%d\n",
 					__func__, dad->test.cur_status_size);
 			break;
 		case CY_NULL_CMD_HANDSHAKE:
@@ -1143,7 +1143,7 @@ static int cyttsp4_grpdata_store_test_regs(struct device *dev, u8 *ic_buf,
 			break;
 		}
 	} else {
-		dev_dbg(dev, "%s: TEST CMD=0x%02X length=%ld %s%ld\n",
+		dev_dbg(dev, "%s: TEST CMD=0x%02X length=%d %s%d\n",
 				__func__, ic_buf[0], length, "cmd_ofs+grpofs=",
 				dad->ic_grpoffset + dad->si->si_ofs.cmd_ofs);
 		cyttsp4_pr_buf(dev, dad->pr_buf, ic_buf, length, "test_cmd");
@@ -1171,7 +1171,7 @@ static int cyttsp4_grpdata_store_tthe_test_regs(struct device *dev, u8 *ic_buf,
 
 	/* Caller function guaranties, length is not bigger than ic_buf size */
 	if (length < CY_CMD_INDEX + 1) {
-		dev_err(dev, "%s: %s length=%ld\n", __func__,
+		dev_err(dev, "%s: %s length=%d\n", __func__,
 				"Buffer length is not valid", length);
 		return -EINVAL;
 	}
@@ -1179,7 +1179,7 @@ static int cyttsp4_grpdata_store_tthe_test_regs(struct device *dev, u8 *ic_buf,
 	dad->test.cur_cmd = ic_buf[CY_CMD_INDEX];
 	if (dad->test.cur_cmd == CY_CMD_CAT_NULL) {
 		if (length < CY_NULL_CMD_INDEX + 1) {
-			dev_err(dev, "%s: %s length=%ld\n", __func__,
+			dev_err(dev, "%s: %s length=%d\n", __func__,
 					"Buffer length is not valid", length);
 			return -EINVAL;
 		}
@@ -1191,18 +1191,18 @@ static int cyttsp4_grpdata_store_tthe_test_regs(struct device *dev, u8 *ic_buf,
 			break;
 		case CY_NULL_CMD_MODE:
 			if (length < CY_NULL_CMD_MODE_INDEX + 1) {
-				dev_err(dev, "%s: %s length=%ld\n", __func__,
+				dev_err(dev, "%s: %s length=%d\n", __func__,
 						"Buffer length is not valid",
 						length);
 				return -EINVAL;
 			}
 			dev_vdbg(dev, "%s: Set cmd mode=%02X\n", __func__,
 					ic_buf[CY_NULL_CMD_MODE_INDEX]);
-			cyttsp4_test_tthe_cmd_mode(dad, ic_buf, (int)length);
+			cyttsp4_test_tthe_cmd_mode(dad, ic_buf, length);
 			break;
 		case CY_NULL_CMD_STATUS_SIZE:
 			if (length < CY_NULL_CMD_SIZE_INDEX + 1) {
-				dev_err(dev, "%s: %s length=%ld\n", __func__,
+				dev_err(dev, "%s: %s length=%d\n", __func__,
 						"Buffer length is not valid",
 						length);
 				return -EINVAL;
@@ -1210,7 +1210,7 @@ static int cyttsp4_grpdata_store_tthe_test_regs(struct device *dev, u8 *ic_buf,
 			dad->test.cur_status_size =
 				ic_buf[CY_NULL_CMD_SIZEL_INDEX]
 				+ (ic_buf[CY_NULL_CMD_SIZEH_INDEX] << 8);
-			dev_vdbg(dev, "%s: test-cur_status_size=%ld\n",
+			dev_vdbg(dev, "%s: test-cur_status_size=%d\n",
 					__func__, dad->test.cur_status_size);
 			break;
 		case CY_NULL_CMD_HANDSHAKE:
@@ -1230,7 +1230,7 @@ static int cyttsp4_grpdata_store_tthe_test_regs(struct device *dev, u8 *ic_buf,
 			break;
 		}
 	} else {
-		dev_dbg(dev, "%s: TEST CMD=0x%02X length=%ld %s%ld\n",
+		dev_dbg(dev, "%s: TEST CMD=0x%02X length=%d %s%d\n",
 				__func__, ic_buf[0], length, "cmd_ofs+grpofs=",
 				dad->ic_grpoffset + dad->si->si_ofs.cmd_ofs);
 		cyttsp4_pr_buf(dev, dad->pr_buf, ic_buf, length, "test_cmd");
@@ -1338,9 +1338,9 @@ static int cyttsp4_ic_parse_input(struct device *dev, const char *buf,
 	int last = 0;
 	int ret;
 
-	/*dev_dbg(dev, "%s: pbuf=%p buf=%p size=%ld %s=%d buf=%s\n", __func__,
-			pbuf, buf, buf_size, "scan buf size",
-			CYTTSP4_INPUT_ELEM_SZ, buf);*///need to check again
+	dev_dbg(dev, "%s: pbuf=%p buf=%p size=%d %s=%d buf=%s\n", __func__,
+			pbuf, buf, (int) buf_size, "scan buf size",
+			CYTTSP4_INPUT_ELEM_SZ, buf);
 
 	while (pbuf <= (buf + buf_size)) {
 		if (i >= CY_MAX_CONFIG_BYTES) {
@@ -1350,7 +1350,7 @@ static int cyttsp4_ic_parse_input(struct device *dev, const char *buf,
 			return -EINVAL;
 		}
 		if (i >= ic_buf_size) {
-			dev_err(dev, "%s: %s size=%d buf_size=%ld\n", __func__,
+			dev_err(dev, "%s: %s size=%d buf_size=%d\n", __func__,
 					"Buffer size exceeded", i, ic_buf_size);
 			return -EINVAL;
 		}
@@ -1453,7 +1453,7 @@ static ssize_t cyttsp4_ic_grpdata_store(struct device *dev,
 
 cyttsp4_ic_grpdata_store_exit:
 	mutex_unlock(&dad->sysfs_lock);
-	dev_vdbg(dev, "%s: return size=%ld\n", __func__, size);
+	dev_vdbg(dev, "%s: return size=%d\n", __func__, size);
 	return size;
 }
 
@@ -1482,7 +1482,7 @@ static int tp_write_cal_file(char *file_path,unsigned int value)
     vfs_write_retval = vfs_write(file_p, (char*)write_buf, sizeof(write_buf), &file_p->f_pos);
     if (vfs_write_retval < 0)
     {
-        printk("[write file <%s>failed]\n", file_path);
+        printk("[write file <%s>failed]\n",file_path);
         goto error;
     }
 
@@ -1517,7 +1517,7 @@ static int tp_read_cal_value(char *file_path)
         file_p = filp_open(file_path, O_CREAT|O_RDONLY , 0665);
         if (IS_ERR(file_p))
         {
-            printk("[open file <%s> failed too ]\n", file_path);
+            printk("[open file <%s>failed too ]\n", file_path);
             goto error;
         }
     }
@@ -1910,7 +1910,7 @@ cyttsp4_get_panel_data_show_err_sysfs:
  * SysFs grpdata show function implementation of group 6.
  * Prints contents of the touch parameters a row at a time.
  */
-static ssize_t cyttsp4_get_panel_data_store(struct device *dev,
+static int cyttsp4_get_panel_data_store(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t size)
 {
 	struct cyttsp4_device_access_data *dad = dev_get_drvdata(dev);
@@ -1948,7 +1948,7 @@ static ssize_t cyttsp4_get_panel_data_store(struct device *dev,
 
 cyttsp4_get_panel_data_store_exit:
 	mutex_unlock(&dad->sysfs_lock);
-	dev_vdbg(dev, "%s: return size=%ld\n", __func__, size);
+	dev_vdbg(dev, "%s: return size=%d\n", __func__, size);
 	return size;
 }
 

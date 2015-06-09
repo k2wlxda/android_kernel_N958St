@@ -502,8 +502,7 @@ static int cyttsp4_hw_reset_(struct cyttsp4_core_data *cd)
 	return rc;
 }
 
-//static inline int cyttsp4_bits_2_bytes(int nbits, int *max)//used for type transition
-static inline int cyttsp4_bits_2_bytes(int nbits, size_t *max)
+static inline int cyttsp4_bits_2_bytes(int nbits, int *max)
 {
 	*max = 1 << nbits;
 	return (nbits + 7) / 8;
@@ -555,7 +554,7 @@ static int cyttsp4_si_get_cydata(struct cyttsp4_core_data *cd)
     struct cyttsp4_cydata *cydata;//add by luochangyang
 
 	si->si_ofs.cydata_size = si->si_ofs.test_ofs - si->si_ofs.cydata_ofs;
-	dev_dbg(cd->dev, "%s: cydata size: %ld\n", __func__,
+	dev_dbg(cd->dev, "%s: cydata size: %d\n", __func__,
 			si->si_ofs.cydata_size);
 
 	if (si->si_ofs.cydata_size <= 0)
@@ -832,13 +831,13 @@ static int cyttsp4_si_get_opcfg_data(struct cyttsp4_core_data *cd)
 	for (abs = 0; abs < CY_TCH_NUM_ABS; abs++) {
 		dev_dbg(cd->dev, "%s: tch_rec_%s\n", __func__,
 			cyttsp4_tch_abs_string[abs]);
-		dev_dbg(cd->dev, "%s:     ofs =%2ld\n", __func__,
+		dev_dbg(cd->dev, "%s:     ofs =%2d\n", __func__,
 			si->si_ofs.tch_abs[abs].ofs);
-		dev_dbg(cd->dev, "%s:     siz =%2ld\n", __func__,
+		dev_dbg(cd->dev, "%s:     siz =%2d\n", __func__,
 			si->si_ofs.tch_abs[abs].size);
-		dev_dbg(cd->dev, "%s:     max =%2ld\n", __func__,
+		dev_dbg(cd->dev, "%s:     max =%2d\n", __func__,
 			si->si_ofs.tch_abs[abs].max);
-		dev_dbg(cd->dev, "%s:     bofs=%2ld\n", __func__,
+		dev_dbg(cd->dev, "%s:     bofs=%2d\n", __func__,
 			si->si_ofs.tch_abs[abs].bofs);
 	}
 
@@ -999,65 +998,65 @@ static int cyttsp4_si_get_op_data_ptrs(struct cyttsp4_core_data *cd)
 static void cyttsp4_si_put_log_data(struct cyttsp4_core_data *cd)
 {
 	struct cyttsp4_sysinfo *si = &cd->sysinfo;
-	dev_dbg(cd->dev, "%s: cydata_ofs =%4ld siz=%4ld\n", __func__,
+	dev_dbg(cd->dev, "%s: cydata_ofs =%4d siz=%4d\n", __func__,
 		si->si_ofs.cydata_ofs, si->si_ofs.cydata_size);
-	dev_dbg(cd->dev, "%s: test_ofs   =%4ld siz=%4ld\n", __func__,
+	dev_dbg(cd->dev, "%s: test_ofs   =%4d siz=%4d\n", __func__,
 		si->si_ofs.test_ofs, si->si_ofs.test_size);
-	dev_dbg(cd->dev, "%s: pcfg_ofs   =%4ld siz=%4ld\n", __func__,
+	dev_dbg(cd->dev, "%s: pcfg_ofs   =%4d siz=%4d\n", __func__,
 		si->si_ofs.pcfg_ofs, si->si_ofs.pcfg_size);
-	dev_dbg(cd->dev, "%s: opcfg_ofs  =%4ld siz=%4ld\n", __func__,
+	dev_dbg(cd->dev, "%s: opcfg_ofs  =%4d siz=%4d\n", __func__,
 		si->si_ofs.opcfg_ofs, si->si_ofs.opcfg_size);
-	dev_dbg(cd->dev, "%s: ddata_ofs  =%4ld siz=%4ld\n", __func__,
+	dev_dbg(cd->dev, "%s: ddata_ofs  =%4d siz=%4d\n", __func__,
 		si->si_ofs.ddata_ofs, si->si_ofs.ddata_size);
-	dev_dbg(cd->dev, "%s: mdata_ofs  =%4ld siz=%4ld\n", __func__,
+	dev_dbg(cd->dev, "%s: mdata_ofs  =%4d siz=%4d\n", __func__,
 		si->si_ofs.mdata_ofs, si->si_ofs.mdata_size);
 
-	dev_dbg(cd->dev, "%s: cmd_ofs       =%4ld\n", __func__,
+	dev_dbg(cd->dev, "%s: cmd_ofs       =%4d\n", __func__,
 		si->si_ofs.cmd_ofs);
-	dev_dbg(cd->dev, "%s: rep_ofs       =%4ld\n", __func__,
+	dev_dbg(cd->dev, "%s: rep_ofs       =%4d\n", __func__,
 		si->si_ofs.rep_ofs);
-	dev_dbg(cd->dev, "%s: rep_sz        =%4ld\n", __func__,
+	dev_dbg(cd->dev, "%s: rep_sz        =%4d\n", __func__,
 		si->si_ofs.rep_sz);
-	dev_dbg(cd->dev, "%s: num_btns      =%4ld\n", __func__,
+	dev_dbg(cd->dev, "%s: num_btns      =%4d\n", __func__,
 		si->si_ofs.num_btns);
-	dev_dbg(cd->dev, "%s: num_btn_regs  =%4ld\n", __func__,
+	dev_dbg(cd->dev, "%s: num_btn_regs  =%4d\n", __func__,
 		si->si_ofs.num_btn_regs);
-	dev_dbg(cd->dev, "%s: tt_stat_ofs   =%4ld\n", __func__,
+	dev_dbg(cd->dev, "%s: tt_stat_ofs   =%4d\n", __func__,
 		si->si_ofs.tt_stat_ofs);
-	dev_dbg(cd->dev, "%s: tch_rec_size  =%4ld\n", __func__,
+	dev_dbg(cd->dev, "%s: tch_rec_size   =%4d\n", __func__,
 		si->si_ofs.tch_rec_size);
-	dev_dbg(cd->dev, "%s: max_tchs      =%4ld\n", __func__,
+	dev_dbg(cd->dev, "%s: max_tchs      =%4d\n", __func__,
 		si->si_ofs.max_tchs);
-	dev_dbg(cd->dev, "%s: mode_size     =%4ld\n", __func__,
+	dev_dbg(cd->dev, "%s: mode_size     =%4d\n", __func__,
 		si->si_ofs.mode_size);
-	dev_dbg(cd->dev, "%s: data_size     =%4ld\n", __func__,
+	dev_dbg(cd->dev, "%s: data_size     =%4d\n", __func__,
 		si->si_ofs.data_size);
-	dev_dbg(cd->dev, "%s: rep_hdr_size  =%4ld\n", __func__,
+	dev_dbg(cd->dev, "%s: rep_hdr_size  =%4d\n", __func__,
 		si->si_ofs.rep_hdr_size);
-	dev_dbg(cd->dev, "%s: map_sz        =%4ld\n", __func__,
+	dev_dbg(cd->dev, "%s: map_sz        =%4d\n", __func__,
 		si->si_ofs.map_sz);
 
-	dev_dbg(cd->dev, "%s: btn_rec_size   =%2ld\n", __func__,
+	dev_dbg(cd->dev, "%s: btn_rec_size   =%2d\n", __func__,
 		si->si_ofs.btn_rec_size);
-	dev_dbg(cd->dev, "%s: btn_diff_ofs  =%2ld\n", __func__,
+	dev_dbg(cd->dev, "%s: btn_diff_ofs  =%2d\n", __func__,
 		si->si_ofs.btn_diff_ofs);
-	dev_dbg(cd->dev, "%s: btn_diff_size  =%2ld\n", __func__,
+	dev_dbg(cd->dev, "%s: btn_diff_size  =%2d\n", __func__,
 		si->si_ofs.btn_diff_size);
 
-	dev_dbg(cd->dev, "%s: max_x    = 0x%04X (%ld)\n", __func__,
-		(int)(si->si_ofs.max_x), si->si_ofs.max_x);
-	dev_dbg(cd->dev, "%s: x_origin = %ld (%s)\n", __func__,
+	dev_dbg(cd->dev, "%s: max_x    = 0x%04X (%d)\n", __func__,
+		si->si_ofs.max_x, si->si_ofs.max_x);
+	dev_dbg(cd->dev, "%s: x_origin = %d (%s)\n", __func__,
 		si->si_ofs.x_origin,
 		si->si_ofs.x_origin == CY_NORMAL_ORIGIN ?
 		"left corner" : "right corner");
-	dev_dbg(cd->dev, "%s: max_y    = 0x%04X (%ld)\n", __func__,
-		(int)(si->si_ofs.max_y), si->si_ofs.max_y);
-	dev_dbg(cd->dev, "%s: y_origin = %ld (%s)\n", __func__,
+	dev_dbg(cd->dev, "%s: max_y    = 0x%04X (%d)\n", __func__,
+		si->si_ofs.max_y, si->si_ofs.max_y);
+	dev_dbg(cd->dev, "%s: y_origin = %d (%s)\n", __func__,
 		si->si_ofs.y_origin,
 		si->si_ofs.y_origin == CY_NORMAL_ORIGIN ?
 		"upper corner" : "lower corner");
-	dev_dbg(cd->dev, "%s: max_p    = 0x%04X (%ld)\n", __func__,
-		(int)(si->si_ofs.max_p), si->si_ofs.max_p);
+	dev_dbg(cd->dev, "%s: max_p    = 0x%04X (%d)\n", __func__,
+		si->si_ofs.max_p, si->si_ofs.max_p);
 
 	dev_dbg(cd->dev, "%s: xy_mode=%p xy_data=%p\n", __func__,
 		si->xy_mode, si->xy_data);

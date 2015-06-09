@@ -286,7 +286,7 @@ static int cyttsp4_xy_worker(struct cyttsp4_mt_data *md)
 	}
 
 	if (num_cur_rec > si->si_ofs.max_tchs) {
-		dev_err(dev, "%s: %s (n=%d c=%ld)\n", __func__,
+		dev_err(dev, "%s: %s (n=%d c=%d)\n", __func__,
 			"too many tch; set to max tch",
 			num_cur_rec, si->si_ofs.max_tchs);
 		num_cur_rec = si->si_ofs.max_tchs;
