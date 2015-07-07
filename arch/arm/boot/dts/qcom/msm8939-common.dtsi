@@ -28,10 +28,17 @@
 		smd21 = &smdtty_data21;
 		smd36 = &smdtty_loopback;
 		i2c0 = &i2c_0;
+		// ztemt add by zhubing start
+		// add i2c gpio-10 gpio-11
+		i2c3 = &i2c_3;
+		// ztemt add by zhubing end
 		i2c4 = &i2c_4;
 		i2c5 = &i2c_5;
 		i2c6 = &i2c_6;
-		spi0 = &spi_0;
+		// ztemt add by zhubing start
+		// cancle spi0
+		//spi0 = &spi_0;
+		// ztemt add by zhubing end
 		spi5 = &spi_5;
 	};
 
@@ -62,7 +69,15 @@
 			reg = <0x0 0x8bd00000 0x0 0x0600000>;
 			label = "peripheral_mem";
 		};
-
+		
+		pstore_reserve_mem: pstore_reserve_mem_region@0 { 
+			linux,reserve-contiguous-region; 
+			linux,reserve-region; 
+			linux,remove-completely; 
+			reg = <0x0 0x9ff00000 0x0 0x00100000>; 
+			label = "pstore_reserve_mem"; 
+		};
+		
 		venus_mem: venus_region@0 {
 			linux,reserve-contiguous-region;
 			linux,memory-limit = <0x90000000>;
@@ -104,10 +119,8 @@
 #include "msm-gdsc-8916.dtsi"
 #include "msm8939-iommu.dtsi"
 #include "msm8939-bus.dtsi"
-#include "msm8939-mdss.dtsi"
 #include "msm8939-iommu-domains.dtsi"
 #include "msm8939-camera.dtsi"
-#include "msm8939-mdss-pll.dtsi"
 
 &soc {
 	#address-cells = <1>;
@@ -822,8 +835,9 @@
 		compatible = "qcom,android-usb";
 		reg = <0x086000c8 0xc8>;
 		qcom,pm-qos-latency = <2 1001 12701>;
-		qcom,streaming-func = "rndis","mtp";
-		qcom,android-usb-uicc-nluns = /bits/ 8 <1>;
+		qcom,android-usb-cdrom;
+		qcom,streaming-func = "mtp";
+		#qcom,android-usb-uicc-nluns = /bits/ 8 <1>;
 	};
 
 	uicc: qcom,ehci-host@79c0000 {
@@ -931,6 +945,35 @@
 		qcom,bam-producer-pipe-index = <9>;
 		qcom,master-id = <86>;
 		};
+		
+	// ztemt add by zhubing start
+	// add i2c qup3 (gpio10 gpio11)
+	i2c_3: i2c@78b7000 { /* BLSP1 QUP3 */
+		compatible = "qcom,i2c-msm-v2";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg-names = "qup_phys_addr", "bam_phys_addr";
+		reg = <0x78b7000 0x1000>,
+		      <0x7884000 0x23000>;
+		interrupt-names = "qup_irq", "bam_irq";
+		interrupts = <0 97 0>, <0 238 0>;
+		qcom,clk-freq-out = <100000>;
+		qcom,clk-freq-in  = <19200000>;
+		clock-names = "iface_clk", "core_clk";
+		clocks = <&clock_gcc clk_gcc_blsp1_ahb_clk>,
+			 <&clock_gcc clk_gcc_blsp1_qup3_i2c_apps_clk>;
+
+		pinctrl-names = "i2c_active", "i2c_sleep";
+		pinctrl-0 = <&i2c_3_active>;
+		pinctrl-1 = <&i2c_3_sleep>;
+		qcom,noise-rjct-scl = <0>;
+		qcom,noise-rjct-sda = <0>;
+		qcom,bam-pipe-idx-cons = <8>;
+		qcom,bam-pipe-idx-prod = <9>;
+		qcom,master-id = <86>;
+	};
+	// ztemt add by zhubing end
+
 
 	i2c_4: i2c@78b8000 { /* BLSP1 QUP4 */
 		compatible = "qcom,i2c-msm-v2";
@@ -966,7 +1009,7 @@
 		      <0x7884000 0x23000>;
 		interrupt-names = "qup_irq", "bam_irq";
 		interrupts = <0 99 0>, <0 238 0>;
-		qcom,clk-freq-out = <100000>;
+		qcom,clk-freq-out = <400000>;
 		qcom,clk-freq-in  = <19200000>;
 		clock-names = "iface_clk", "core_clk";
 		clocks = <&clock_gcc clk_gcc_blsp1_ahb_clk>,
@@ -1147,7 +1190,7 @@
 		reg = <0x4a3000 0x1000>;
 		clock-frequency = <32768>;
 	};
-
+/* comment by congshan start 
 	blsp1_uart1: serial@78af000 {
 		compatible = "qcom,msm-hsuart-v14";
 		reg = <0x78af000 0x200>,
@@ -1178,7 +1221,7 @@
 		pinctrl-1 = <&hsuart_sleep>;
 		status = "disabled";
 	};
-
+comment by congshan end*/
 	qcom,venus@1de0000 {
 		compatible = "qcom,pil-tz-generic";
 		reg = <0x1de0000 0x4000>;
@@ -1330,7 +1373,7 @@
 			compatible = "qcom,msm-dai-q6-mi2s";
 			qcom,msm-dai-q6-mi2s-dev-id = <3>;
 			qcom,msm-mi2s-rx-lines = <1>;
-			qcom,msm-mi2s-tx-lines = <2>;
+			qcom,msm-mi2s-tx-lines = <0>;
 		};
 	};
 
@@ -1469,6 +1512,7 @@
 		clock-names = "core_clk", "core0_clk", "core1_clk", "iface_clk", "bus_clk";
 		qcom,clock-configs = <0x1 0x0 0x0 0x0 0x0>;
 		qcom,sw-power-collapse;
+		qcom,enable-minimum-voting;
 		qcom,load-freq-tbl =
 			<489600 266670000 0x0c000000>, /* HEVC  decoder 1080p 60fps  */
 			<489600 266670000 0x030fcfff>, /* Legacy decoder 1080p 60fps  */
@@ -1554,16 +1598,6 @@
 					<63 512 653312 572826>,
 					<63 512 1306624 2291405>;
 				qcom,bus-configs = <0x0c000000>;
-			};
-			qcom,msm-bus-client@3 {
-				qcom,msm-bus,name = "venus-arm9-ddr";
-				qcom,msm-bus,num-cases = <2>;
-				qcom,msm-bus,num-paths = <1>;
-				qcom,msm-bus,vectors-KBps =
-					<63 512 0 0>,
-					<63 512 1000 1000>;
-				qcom,bus-configs = <0x00000000>;
-				qcom,bus-passive;
 			};
 		};
 	};

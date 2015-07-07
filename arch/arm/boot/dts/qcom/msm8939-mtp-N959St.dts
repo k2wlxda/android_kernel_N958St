@@ -1,0 +1,52 @@
+/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
+*
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License version 2 and
+* only version 2 as published by the Free Software Foundation.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*/
+
+/dts-v1/;
+
+#include "msm8939.dtsi"
+
+#include "N959St/msm8939-mtp-sdhc2.dtsi"
+
+#include "msm8939-mtp.dtsi"
+#include "N959St/msm8939-audio-internal_codec.dtsi"
+#include "N959St/msm8939-mdss-pll.dtsi"
+#include "N959St/msm8939-mdss.dtsi"
+#include "N959St/msm8939-pinctrl-ztemt.dtsi"
+#include "N959St/msm8939-mtp-lcd.dtsi"
+#include "N959St/msm8939-mtp-keys.dtsi"
+#include "N959St/msm8939-mtp-tp.dtsi"
+#include "N959St/msm8939-mtp-sensor.dtsi"
+#include "N959St/msm8939-mtp-charger.dtsi"
+#include "N959St/msm8939-mtp-breathlight.dtsi"
+
+#include "N959St/msm8939-camera-sensor-mtp.dtsi"
+#include "N959St/msm8939-vbus-otg.dtsi"
+#include "N959St/msm8939-mtp-bq24296.dtsi"
+
+/*
+#include "N959St/msm8939-mtp-lcd.dtsi"
+#include "N959St/msm8939-mtp-keys.dtsi"
+*/
+
+/ {
+	model = "Qualcomm Technologies, Inc. MSM 8939 MTP";
+	compatible = "qcom,msm8939-mtp", "qcom,msm8939", "qcom,mtp";
+	qcom,board-id = <8 1>;
+};
+
+/*
+&cci {
+	qcom,camera@0 {
+		qcom,led-flash-src = <&led_flash0>;
+	};
+};
+*/

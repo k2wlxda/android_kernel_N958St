@@ -23,7 +23,9 @@
  * if wakeup events are registered during or immediately before the transition.
  */
 bool events_check_enabled __read_mostly;
-
+#ifdef CONFIG_ZTEMT_POWER_DEBUG
+extern bool wakeup_wake_lock_debug;
+#endif
 /*
  * Combined counters of registered wakeup events and wakeup events in progress.
  * They need to be modified together atomically, so it's better to use one
@@ -410,7 +412,12 @@ static void wakeup_source_report_event(struct wakeup_source *ws)
 	/* This is racy, but the counter is approximate anyway. */
 	if (events_check_enabled)
 		ws->wakeup_count++;
-
+	#ifdef CONFIG_ZTEMT_POWER_DEBUG
+	if (wakeup_wake_lock_debug){
+	  wakeup_wake_lock_debug = false;
+	  printk("First wakeup lock:%s\n", ws->name);
+	}
+	#endif
 	if (!ws->active)
 		wakeup_source_activate(ws);
 }
@@ -805,6 +812,31 @@ void pm_wakep_autosleep_enabled(bool set)
 
 static struct dentry *wakeup_sources_stats_dentry;
 
+#ifdef CONFIG_ZTEMT_POWER_DEBUG
+void global_print_active_locks_debug(struct wakeup_source *ws)
+{
+	unsigned long flags;
+
+	spin_lock_irqsave(&ws->lock, flags);
+
+	if (ws->active) {
+		printk("active wake lock %s\n", ws->name);
+	} 
+	spin_unlock_irqrestore(&ws->lock, flags);
+}
+
+void global_print_active_locks(void *unused)
+{
+	struct wakeup_source *ws;
+  
+	rcu_read_lock();
+	list_for_each_entry_rcu(ws, &wakeup_sources, entry)
+		global_print_active_locks_debug(ws);
+	rcu_read_unlock();
+
+}
+
+#endif
 /**
  * print_wakeup_source_stats - Print wakeup source statistics information.
  * @m: seq_file to print the statistics into.

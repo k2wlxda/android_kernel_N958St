@@ -1,4 +1,4 @@
-/* Copyright (c) 2008-2015, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2008-2014, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -285,6 +285,9 @@ struct mipi_panel_info {
 
 	char lp11_init;
 	u32  init_delay;
+
+    u32  lp11_rst_delay;
+    u32  sleep_lp00_delay;
 };
 
 struct edp_panel_info {
@@ -390,7 +393,6 @@ struct mdss_panel_info {
 	u32 max_fps;
 
 	u32 cont_splash_enabled;
-	bool esd_rdy;
 	u32 partial_update_enabled;
 	u32 dcs_cmd_by_left;
 	u32 partial_update_roi_merge;
@@ -407,6 +409,17 @@ struct mdss_panel_info {
 	bool is_prim_panel;
 
 	char panel_name[MDSS_MAX_PANEL_LEN];
+
+    bool avdd_enabled;
+    u32  avdd_vsp_voltage;
+    u32  avdd_vsn_voltage;
+    u32  avdd_vsp_vsn_delay;
+    u32  before_panel_on_cmd_delay;
+    u32  before_avdd_off_delay;
+	u32 delay_18_to_55;
+	u32 rst_gpio_before_avdd_off;
+	u32 disable_dimming_when_suspend;
+
 	struct mdss_mdp_pp_tear_check te;
 
 	struct lcd_panel_info lcdc;

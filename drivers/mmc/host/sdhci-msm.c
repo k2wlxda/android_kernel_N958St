@@ -981,6 +981,9 @@ static void sdhci_msm_set_mmc_drv_type(struct sdhci_host *host, u32 opcode,
 			drv_type);
 }
 
+#define CORE_VENDOR_SPEC_FUNC2 0x110
+#define ONE_MID_EN	(1 << 25)
+
 int sdhci_msm_execute_tuning(struct sdhci_host *host, u32 opcode)
 {
 	unsigned long flags;
@@ -1053,6 +1056,9 @@ retry:
 			.data = &data
 		};
 		struct scatterlist sg;
+
+		writel_relaxed((readl_relaxed(host->ioaddr + CORE_VENDOR_SPEC_FUNC2) | ONE_MID_EN),
+				host->ioaddr + CORE_VENDOR_SPEC_FUNC2);
 
 		/* set the phase in delay line hw block */
 		rc = msm_config_cm_dll_phase(host, phase);
@@ -1160,6 +1166,8 @@ out:
 	if (!rc)
 		msm_host->tuning_done = true;
 	spin_unlock_irqrestore(&host->lock, flags);
+	writel_relaxed((readl_relaxed(host->ioaddr + CORE_VENDOR_SPEC_FUNC2) & ~ONE_MID_EN),
+			host->ioaddr + CORE_VENDOR_SPEC_FUNC2);
 	pr_debug("%s: Exit %s, err(%d)\n", mmc_hostname(mmc), __func__, rc);
 	return rc;
 }
@@ -2364,18 +2372,14 @@ static void sdhci_msm_check_power_status(struct sdhci_host *host, u32 req_type)
 
 static void sdhci_msm_toggle_cdr(struct sdhci_host *host, bool enable)
 {
-	u32 config;
-	config = readl_relaxed(host->ioaddr + CORE_DLL_CONFIG);
-
-	if (enable) {
-		config |= CORE_CDR_EN;
-		config &= ~CORE_CDR_EXT_EN;
-		writel_relaxed(config, host->ioaddr + CORE_DLL_CONFIG);
-	} else {
-		config &= ~CORE_CDR_EN;
-		config |= CORE_CDR_EXT_EN;
-		writel_relaxed(config, host->ioaddr + CORE_DLL_CONFIG);
-	}
+	if (enable)
+		writel_relaxed((readl_relaxed(host->ioaddr +
+					      CORE_DLL_CONFIG) | CORE_CDR_EN),
+			       host->ioaddr + CORE_DLL_CONFIG);
+	else
+		writel_relaxed((readl_relaxed(host->ioaddr +
+					      CORE_DLL_CONFIG) & ~CORE_CDR_EN),
+			       host->ioaddr + CORE_DLL_CONFIG);
 }
 
 static unsigned int sdhci_msm_max_segs(void)
@@ -2865,6 +2869,8 @@ void sdhci_msm_dump_vendor_regs(struct sdhci_host *host)
 		readl_relaxed(host->ioaddr + CORE_VENDOR_SPEC),
 		readl_relaxed(host->ioaddr + CORE_VENDOR_SPEC_ADMA_ERR_ADDR0),
 		readl_relaxed(host->ioaddr + CORE_VENDOR_SPEC_ADMA_ERR_ADDR1));
+	pr_info("Vndr func2: 0x%08x\n",
+		readl_relaxed(host->ioaddr + CORE_VENDOR_SPEC_FUNC2));
 
 	/*
 	 * tbsel indicates [2:0] bits and tbsel2 indicates [7:4] bits

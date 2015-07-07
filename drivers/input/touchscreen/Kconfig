@@ -11,7 +11,13 @@ menuconfig INPUT_TOUCHSCREEN
 
 if INPUT_TOUCHSCREEN
 
-source "drivers/input/touchscreen/synaptics_dsx/Kconfig"
+source "drivers/input/touchscreen/synaptics_dsx-ztemt/Kconfig"
+source "drivers/input/touchscreen/gt915/Kconfig"
+source "drivers/input/touchscreen/ft5336/Kconfig"
+source "drivers/input/touchscreen/cyttsp4/Kconfig"
+source "drivers/input/touchscreen/gt1x/Kconfig"
+source "drivers/input/touchscreen/cyttsp5/Kconfig"
+source "drivers/input/touchscreen/melfas_mms400/Kconfig"
 
 config TOUCHSCREEN_88PM860X
 	tristate "Marvell 88PM860x touchscreen"

@@ -289,6 +289,7 @@ enum {
 
 struct mdss_dsi_ctrl_pdata {
 	int ndx;	/* panel_num */
+ 	char *panel_name;
 	int (*on) (struct mdss_panel_data *pdata);
 	int (*off) (struct mdss_panel_data *pdata);
 	int (*low_power_config) (struct mdss_panel_data *pdata, int enable);

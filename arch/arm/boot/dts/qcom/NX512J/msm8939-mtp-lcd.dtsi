@@ -1,0 +1,126 @@
+/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+#include "zte-dsi-panel-sharp-r63417-1080p-5p5-cmd.dtsi"
+#include "zte-dsi-panel-sharp-r63417-1080p-5p5-video.dtsi"
+#include "msm8939-lcd-pinctrl.dtsi"
+
+&soc {
+	i2c@78b7000 { /* BLSP1 QUP3 */
+		lcd_avdd_i2c_adapter@3e {
+			compatible = "lcd,avdd";
+			reg = <0x3e>;
+			vdd-supply = <&pm8916_l17>;
+			vcc_i2c-supply = <&pm8916_l5>;
+			pinctrl-0 = <&vsp_en_gpio_active &vsn_en_gpio_active>;
+			pinctrl-1 = <&vsp_en_gpio_suspend &vsn_en_gpio_suspend>;
+			vsp-en-gpio    = <&msm_gpio 97 0x00>;
+			vsn-en-gpio    = <&msm_gpio 98 0x00>;
+		};
+	};
+};
+
+
+&mdss_mdp {
+	qcom,mdss-pref-prim-intf = "dsi";
+};
+
+&dsi_sharp_r63417_1080p_5p5_video_vid {
+	qcom,mdss-dsi-lp11-init;
+	qcom,rst-gpio-before-avdd-off;
+	qcom,cont-splash-enabled;
+    qcom,avdd-enabled;
+    qcom,avdd-vsp-voltage = <5000>;
+    qcom,avdd-vsn-voltage = <5000>;
+    qcom,avdd-vsp-vsn-delay = <10>;
+    qcom,befor-panel-on-cmd-delay = <10>;
+	qcom,befor-avdd-off-delay = <10>;
+	qcom,18-to-55-delay = <10>;
+	qcom,rst-gpio-before-avdd-off;
+	qcom,disable-dimming-when-suspend;
+
+    //LP11
+	//qcom,mdss-dsi-hfp-power-mode;
+	//qcom,mdss-dsi-hsa-power-mode;
+	//qcom,mdss-dsi-hbp-power-mode;
+
+	//ESD check enable
+	//qcom,esd-check-enabled;
+
+	//ESD check method choice and only choose one
+	//qcom,mdss-dsi-panel-status-check-mode = "bta_check";
+	//qcom,mdss-dsi-panel-status-check-mode = "reg_read_zte";
+};
+
+&dsi_sharp_r63417_1080p_5p5_cmd_vid {
+	qcom,mdss-dsi-lp11-init;
+	qcom,rst-gpio-before-avdd-off;
+	qcom,cont-splash-enabled;
+	qcom,mdss-dsi-panel-clockrate = <933000000>;
+    qcom,avdd-enabled;
+    qcom,avdd-vsp-voltage = <5000>;
+    qcom,avdd-vsn-voltage = <5000>;
+    qcom,avdd-vsp-vsn-delay = <10>;
+    qcom,befor-panel-on-cmd-delay = <10>;
+	qcom,befor-avdd-off-delay = <10>;
+	qcom,18-to-55-delay = <10>;
+	qcom,rst-gpio-before-avdd-off;
+	qcom,disable-dimming-when-suspend;
+
+    //LP11
+	//qcom,mdss-dsi-hfp-power-mode;
+	//qcom,mdss-dsi-hsa-power-mode;
+	//qcom,mdss-dsi-hbp-power-mode;
+
+	//ESD check enable
+	//qcom,esd-check-enabled;
+
+	//ESD check method choice and only choose one
+	//qcom,mdss-dsi-panel-status-check-mode = "bta_check";
+	//qcom,mdss-dsi-panel-status-check-mode = "reg_read_zte";
+};
+
+&pmx_mdss {
+/*
+	// qualcomm orial code
+	qcom,num-grp-pins = <3>;
+	qcom,pins = <&gp 97>, <&gp 25>, <&gp 98>;
+*/
+	qcom,num-grp-pins = <2>;
+	qcom,pins = <&gp 24>, <&gp 25>;
+};
+
+&pmx_mdss_te {
+	qcom,num-grp-pins = <1>;
+	qcom,pins = <&gp 24>;
+};
+
+&mdss_dsi0 {
+/*  
+	// qualcomm orial code
+	pinctrl-names = "mdss_default", "mdss_sleep";
+	pinctrl-0 = <&mdss_dsi_active &mdss_te_active>;
+	pinctrl-1 = <&mdss_dsi_suspend &mdss_te_suspend>;
+	qcom,dsi-pref-prim-pan = <&dsi_jdi_1080_vid>;
+
+	qcom,platform-enable-gpio = <&msm_gpio 97 0>;
+	qcom,platform-reset-gpio = <&msm_gpio 25 0>;
+	qcom,platform-bklight-en-gpio = <&msm_gpio 98 0>;
+*/
+
+	qcom,dsi-pref-prim-pan = <&dsi_sharp_r63417_1080p_5p5_cmd_vid>;
+	pinctrl-names = "mdss_default", "mdss_sleep";
+	pinctrl-0 = <&mdss_te_active &mdss_te_check_active>;
+	pinctrl-1 = <&mdss_te_suspend &mdss_te_check_suspend>;
+
+	qcom,platform-te-gpio = <&msm_gpio 24 0>;
+	qcom,platform-reset-gpio = <&msm_gpio 25 0>;
+};

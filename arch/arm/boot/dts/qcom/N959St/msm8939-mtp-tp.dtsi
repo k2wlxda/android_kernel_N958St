@@ -1,0 +1,43 @@
+/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&soc {
+	i2c@78b9000 { /* BLSP1 QUP5 */
+		goodix_gt915@5d {
+			compatible = "goodix,gt915_i2c";
+			reg = <0x5d>;
+			interrupt-parent = <&msm_gpio>;
+			interrupts = <13 0x2008>;
+			vdd_ana-supply = <&pm8916_l17>;
+			vcc_i2c-supply = <&pm8916_l6>;
+			pinctrl-names = "gt9xx_int_default","gt9xx_int_sleep";
+			pinctrl-0 = <&gt9xx_int_default>;
+			pinctrl-1 = <&gt9xx_int_sleep>;
+			goodix,reset-gpio = <&msm_gpio 12 0x00>;
+			goodix,irq-gpio = <&msm_gpio 13 0x2008>;
+		};
+		cyttsp4_i2c_adapter@24 {
+			compatible = "cypress,cyttsp4_i2c_adapter";
+			reg = <0x24>;
+			interrupt-parent = <&msm_gpio>;
+			interrupts = <13 0x2>;
+			vdd_ana-supply = <&pm8916_l17>;
+			vcc_i2c-supply = <&pm8916_l6>;
+			pinctrl-names = "cyttsp4_int_default","cyttsp4_int_sleep";
+			pinctrl-0 = <&cyttsp4_int_default>;
+			pinctrl-1 = <&cyttsp4_int_sleep>;
+			cypress,reset-gpio = <&msm_gpio 12 0x00>;
+			cypress,irq-gpio = <&msm_gpio 13 0x2008>;
+		};
+	};
+};
+

@@ -424,7 +424,6 @@ static struct {
 	struct pm_qos_request wcnss_pm_qos_request;
 	int pc_disabled;
 	struct delayed_work wcnss_pm_qos_del_req;
-	struct mutex pm_qos_mutex;
 } *penv = NULL;
 
 static ssize_t wcnss_wlan_macaddr_store(struct device *dev,
@@ -1169,26 +1168,22 @@ void wcnss_pm_qos_update_request(int val)
 
 void wcnss_disable_pc_remove_req(void)
 {
-	mutex_lock(&penv->pm_qos_mutex);
 	if (penv->pc_disabled) {
-		penv->pc_disabled = 0;
 		wcnss_pm_qos_update_request(WCNSS_ENABLE_PC_LATENCY);
 		wcnss_pm_qos_remove_request();
 		wcnss_allow_suspend();
+		penv->pc_disabled = 0;
 	}
-	mutex_unlock(&penv->pm_qos_mutex);
 }
 
 void wcnss_disable_pc_add_req(void)
 {
-	mutex_lock(&penv->pm_qos_mutex);
 	if (!penv->pc_disabled) {
 		wcnss_pm_qos_add_request();
 		wcnss_prevent_suspend();
 		wcnss_pm_qos_update_request(WCNSS_DISABLE_PC_LATENCY);
 		penv->pc_disabled = 1;
 	}
-	mutex_unlock(&penv->pm_qos_mutex);
 }
 
 static void wcnss_smd_notify_event(void *data, unsigned int event)
@@ -2448,7 +2443,7 @@ static void wcnss_nvbin_dnld_main(struct work_struct *worker)
 	if (!FW_CALDATA_CAPABLE())
 		goto nv_download;
 
-	if (!penv->fw_cal_available && WCNSS_CONFIG_UNSPECIFIED
+	if (!penv->fw_cal_available && 0
 		!= has_calibrated_data && !penv->user_cal_available) {
 		while (!penv->user_cal_available && retry++ < 5)
 			msleep(500);
@@ -3171,7 +3166,6 @@ wcnss_wlan_probe(struct platform_device *pdev)
 	mutex_init(&penv->dev_lock);
 	mutex_init(&penv->ctrl_lock);
 	mutex_init(&penv->vbat_monitor_mutex);
-	mutex_init(&penv->pm_qos_mutex);
 	init_waitqueue_head(&penv->read_wait);
 
 	/* Since we were built into the kernel we'll be called as part

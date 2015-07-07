@@ -143,6 +143,10 @@ static struct device_attribute power_supply_attrs[] = {
 	POWER_SUPPLY_ATTR(health),
 	POWER_SUPPLY_ATTR(present),
 	POWER_SUPPLY_ATTR(online),
+	#ifdef CONFIG_ZTEMT_BQ24296_CHARGE
+	POWER_SUPPLY_ATTR(device_info),
+	POWER_SUPPLY_ATTR(restart_charging),
+	#endif
 	POWER_SUPPLY_ATTR(authentic),
 	POWER_SUPPLY_ATTR(charging_enabled),
 	POWER_SUPPLY_ATTR(technology),

@@ -50,6 +50,9 @@
 
 #include "queue.h"
 
+/* ZTEMT: Ignore REQ_SECURE flag to reduce the time for erasing mmc */
+#define IGNORE_REQ_SECURE
+
 MODULE_ALIAS("mmc:block");
 #ifdef MODULE_PARAM_PREFIX
 #undef MODULE_PARAM_PREFIX
@@ -1393,6 +1396,8 @@ out:
 	return err ? 0 : 1;
 }
 
+#ifdef IGNORE_REQ_SECURE
+#else
 static int mmc_blk_issue_secdiscard_rq(struct mmc_queue *mq,
 				       struct request *req)
 {
@@ -1466,6 +1471,7 @@ out:
 
 	return err ? 0 : 1;
 }
+#endif
 
 static int mmc_blk_issue_flush(struct mmc_queue *mq, struct request *req)
 {
@@ -2816,11 +2822,15 @@ static int mmc_blk_issue_rq(struct mmc_queue *mq, struct request *req)
 		/* complete ongoing async transfer before issuing discard */
 		if (card->host->areq)
 			mmc_blk_issue_rw_rq(mq, NULL);
+#ifdef IGNORE_REQ_SECURE
+		ret = mmc_blk_issue_discard_rq(mq, req);
+#else
 		if (cmd_flags & REQ_SECURE &&
 			!(card->quirks & MMC_QUIRK_SEC_ERASE_TRIM_BROKEN))
 			ret = mmc_blk_issue_secdiscard_rq(mq, req);
 		else
 			ret = mmc_blk_issue_discard_rq(mq, req);
+#endif
 	} else if (cmd_flags & REQ_FLUSH) {
 		/* complete ongoing async transfer before issuing flush */
 		if (card->host->areq)

@@ -18,6 +18,18 @@
 #include "msm_cci.h"
 #include "msm_camera_dt_util.h"
 
+#include "t4k37_otp.h"
+
+#ifdef CONFIG_CAMERA_INFO_SHOW
+#include <linux/timer.h>
+#include <linux/err.h>
+#include <linux/ctype.h>
+#include <linux/of.h>
+#include <linux/of_address.h>
+
+char *main_sensor_name=NULL;
+char *sub_sensor_name=NULL;
+#endif
 /* Logging macro */
 #undef CDBG
 #define CDBG(fmt, args...) pr_debug(fmt, ##args)
@@ -635,7 +647,10 @@ int32_t msm_sensor_driver_probe(void *setting,
 	struct msm_camera_slave_info        *camera_info = NULL;
 
 	unsigned long                        mount_pos = 0;
-
+	
+#if (defined(CONFIG_N958ST_CAMERA)|| defined(CONFIG_N918ST_CAMERA)||defined(CONFIG_NX511J_CAMERA))
+    uint16_t  chipid = 0;
+#endif
 	/* Validate input parameters */
 	if (!setting) {
 		pr_err("failed: slave_info %p", setting);
@@ -771,8 +786,13 @@ int32_t msm_sensor_driver_probe(void *setting,
 		pr_err("failed");
 		goto free_slave_info;
 	}
-
-
+	if(!strncmp(slave_info->sensor_name,"t4k37_qtech_f4k37ab_msm8939",30)||!strncmp(slave_info->sensor_name,"ov5648_msm8939",20)){
+	s_ctrl->sensordata->power_info.cam_vreg[0].min_voltage=2000000;
+	s_ctrl->sensordata->power_info.cam_vreg[0].max_voltage=2100000;
+	pr_err("wdy after change %s  min_DVDD_s4=%d  max_DVDD_s4=%d\n",__func__,\
+		s_ctrl->sensordata->power_info.cam_vreg[0].min_voltage,s_ctrl->sensordata->power_info.cam_vreg[0].max_voltage);
+	pr_err("wdy  changed DVDD  %s  of  current_sensor_name=%s\n",__func__,slave_info->sensor_name);
+	}
 	camera_info = kzalloc(sizeof(struct msm_camera_slave_info), GFP_KERNEL);
 	if (!camera_info) {
 		pr_err("failed: no memory slave_info %p", camera_info);
@@ -871,6 +891,36 @@ int32_t msm_sensor_driver_probe(void *setting,
 		pr_err("%s power up failed", slave_info->sensor_name);
 		goto free_camera_info;
 	}
+#ifdef CONFIG_CAMERA_INFO_SHOW	
+       else{
+	   	if(slave_info->camera_id==0)
+	   	{
+			main_sensor_name= slave_info->sensor_name;
+			printk("[tanyijuntest]main_sensor_name = %s \n",main_sensor_name);
+	   	}
+	   	if(slave_info->camera_id==1)
+	   	{
+			sub_sensor_name= slave_info->sensor_name;
+			printk("[tanyijuntest]sub_sensor_name = %s \n", sub_sensor_name);
+	   	}		
+	   }
+#endif
+
+#if (defined(CONFIG_N958ST_CAMERA)|| defined(CONFIG_N918ST_CAMERA)||defined(CONFIG_NX511J_CAMERA))
+	rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_read(
+		s_ctrl->sensor_i2c_client, s_ctrl->sensordata->slave_info->sensor_id_reg_addr,
+		&chipid, MSM_CAMERA_I2C_WORD_DATA);
+	  pr_err("tanyijun %s: %s: read id : %x\n", __func__, s_ctrl->sensordata->sensor_name,chipid);
+	  if (chipid == 0x1C21) {
+	  	printk("read t4k37 otp now\n");
+		t4k37_otp_init_setting(s_ctrl);
+		 
+	  }
+	  
+	  if (chipid != 0x1C21) {
+		  pr_err("tanyijun read_eeprom_memory() chip id doesnot match\n");
+	  }
+#endif
 
 	pr_err("%s probe succeeded", slave_info->sensor_name);
 
@@ -1304,11 +1354,59 @@ static struct i2c_driver msm_sensor_driver_i2c = {
 	},
 };
 
+#ifdef CONFIG_CAMERA_INFO_SHOW
+static ssize_t back_camera_arg_show(struct kobject *kobj, struct kobj_attribute *attr,
+   char *buf)
+{
+	//snprintf(buf, 50, "%u\n", zte_intensity_value);
+
+	return snprintf(buf, PAGE_SIZE, "%s\n", main_sensor_name);
+}
+
+static ssize_t front_camera_arg_show(struct kobject *kobj, struct kobj_attribute *attr,
+   char *buf)
+{
+	//snprintf(buf, 50, "%u\n", zte_intensity_value);
+
+	return snprintf(buf, PAGE_SIZE, "%s\n", sub_sensor_name);
+}
+
+static struct kobject *camera_info_kobj;
+
+static struct kobj_attribute back_camera_attribute         = __ATTR(back_camera,          0664,       back_camera_arg_show, NULL);
+static struct kobj_attribute front_camera_attribute         = __ATTR(front_camera,          0664,      front_camera_arg_show, NULL);
+
+
+static struct attribute *attrs[] = {
+	  &back_camera_attribute.attr,
+	  &front_camera_attribute.attr,
+	  NULL, /* need to NULL terminate the list of attributes */
+};
+
+static struct attribute_group attr_group = {
+	.attrs = attrs,
+};
+#endif
 static int __init msm_sensor_driver_init(void)
 {
 	int32_t rc = 0;
-
+#ifdef CONFIG_CAMERA_INFO_SHOW       
+	int retval;
+#endif
+	   
 	CDBG("Enter");
+
+#ifdef CONFIG_CAMERA_INFO_SHOW
+	camera_info_kobj = kobject_create_and_add("camera_info", kernel_kobj);
+	if (!camera_info_kobj)
+		  printk(" [tanyijun]  camera_para_kobj creat failed \n");
+	else{
+		retval = sysfs_create_group(camera_info_kobj, &attr_group);
+		if (retval)
+			kobject_put(camera_info_kobj);
+	}
+#endif
+
 	rc = platform_driver_probe(&msm_sensor_platform_driver,
 		msm_sensor_driver_platform_probe);
 	if (!rc) {
@@ -1328,6 +1426,9 @@ static void __exit msm_sensor_driver_exit(void)
 	CDBG("Enter");
 	platform_driver_unregister(&msm_sensor_platform_driver);
 	i2c_del_driver(&msm_sensor_driver_i2c);
+#ifdef CONFIG_CAMERA_INFO_SHOW	
+	kobject_put(camera_info_kobj);
+#endif
 	return;
 }
 

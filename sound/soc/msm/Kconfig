@@ -305,6 +305,11 @@ config SND_SOC_MDM9630
 	help
 	 To add support for SoC audio on MDM9630 boards.
 
+config FEATURE_ZTEMT_AUDIO_EXT_PA
+	tristate "use to enable the external audio PA AW8736"
+	default n	
+	help 
+		use to enable the external audio PA AW8736
 config SND_SOC_MSM8994
 	tristate "SoC Machine driver for MSM8994 boards"
 	depends on ARCH_MSM8994

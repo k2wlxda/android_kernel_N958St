@@ -78,7 +78,6 @@ static int msm_csid_cid_lut(
 				 __func__, csid_lut_params->vc_cfg[i]->cid);
 			return -EINVAL;
 		}
-
 		CDBG("%s lut params num_cid = %d, cid = %d\n",
 			__func__,
 			csid_lut_params->num_cid,

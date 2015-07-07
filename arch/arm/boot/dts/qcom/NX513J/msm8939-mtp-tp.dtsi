@@ -1,0 +1,32 @@
+/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&soc {
+	i2c@78b9000 { /* BLSP1 QUP5 */
+		melfas@48 {
+			compatible = "melfas,mms_ts";
+			reg = <0x48>;
+			interrupt-parent = <&msm_gpio>;
+			interrupts = <13 0x2008>;
+			vdd_ana-supply = <&pm8916_l17>;
+			vcc_i2c-supply = <&pm8916_l6>;
+			pinctrl-names = "melfas_pin_active","melfas_pin_suspend";
+			pinctrl-0 = <&melfas_int_active &melfas_rst_active>;
+			pinctrl-1 = <&melfas_int_suspend &melfas_rst_suspend>;
+			mms_ts,max_x = <1080>;
+			mms_ts,max_y = <1920>;
+			mms_ts,irq-gpio = <&msm_gpio 13 0x2008>;
+			mms_ts,reset-gpio = <&msm_gpio 12 0x00>;
+		};
+	};
+};
+

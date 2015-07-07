@@ -26,6 +26,9 @@ fw-shipped- += acenic/tg1.bin
 else
 acenic-objs := acenic/tg1.bin acenic/tg2.bin
 endif
+
+fw-shipped-$(CONFIG_TOUCHSCREEN_MELFAS_MMS458) += melfas/MMS458_V1.31_V1.42_V1.01_V1.01
+
 fw-shipped-$(CONFIG_ACENIC) += $(acenic-objs)
 fw-shipped-$(CONFIG_ADAPTEC_STARFIRE) += adaptec/starfire_rx.bin \
 					 adaptec/starfire_tx.bin

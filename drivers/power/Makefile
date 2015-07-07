@@ -64,10 +64,21 @@ obj-$(CONFIG_QPNP_FG)		+= qpnp-fg.o
 obj-$(CONFIG_QPNP_CHARGER)	+= qpnp-charger.o
 obj-$(CONFIG_QPNP_LINEAR_CHARGER)	+= qpnp-linear-charger.o
 obj-$(CONFIG_QPNP_SMBCHARGER)	+= qpnp-smbcharger.o
+
+obj-$(CONFIG_ZTEMT_BQ24296M_CHARGE)	+= bq24296m-charger.o
+obj-$(CONFIG_ZTEMT_BQ27520_BATTERY)	+= bq27520_battery.o
+obj-$(CONFIG_ZTEMT_BQ24296_CHARGE)	+= bq24296_charger.o
+obj-$(CONFIG_ZTEMT_SMB1351_CHARGE)	+= smb1351-charger.o
+
+obj-$(CONFIG_ZTEMT_POWER_DEBUG)	+= ztemt_power_debug.o
 obj-$(CONFIG_CHARGER_SMB347)	+= smb347-charger.o
 obj-$(CONFIG_CHARGER_TPS65090)	+= tps65090-charger.o
 obj-$(CONFIG_BATTERY_BCL)	+= battery_current_limit.o
 obj-$(CONFIG_MSM_BCL_CTL)	+= msm_bcl.o
 obj-$(CONFIG_MSM_BCL_PERIPHERAL_CTL) += bcl_peripheral.o
+obj-$(CONFIG_ZTEMT_BATTERY_FG_LC709203F)	+= lc709203f_battery.o 
 obj-$(CONFIG_POWER_RESET)	+= reset/
 obj-y				+= qcom/
+
+obj-y 				+= ztemt_hw_version.o
+

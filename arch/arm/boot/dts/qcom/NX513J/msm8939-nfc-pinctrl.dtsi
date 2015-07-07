@@ -1,0 +1,105 @@
+/* Copyright (c) 2013-2014, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&soc {
+	tlmm_pinmux: pinctrl@1000000 {
+		compatible = "qcom,msm-tlmm-8939", "qcom,msm-tlmm-8916";
+		reg = <0x1000000 0x300000>;
+		interrupts = <0 208 0>;
+
+/*
+		pmx_rd_nfc_int{
+			qcom,pins = <&gp 21>;
+			qcom,pin-func = <0>;
+			qcom,num-grp-pins = <1>;
+			label = "pmx_nfc_int";
+
+			nfc_int_active: active {
+				drive-strength = <6>;
+				bias-pull-up;
+			};
+
+			nfc_int_suspend: suspend {
+				drive-strength = <6>;
+				bias-pull-up;
+			};
+		};
+
+		pmx_nfc_reset{
+			qcom,pins = <&gp 20>;
+			qcom,pin-func = <0>;
+			qcom,num-grp-pins = <1>;
+			label = "pmx_nfc_disable";
+
+			nfc_disable_active: active {
+				drive-strength = <6>;
+				bias-pull-up;
+			};
+
+			nfc_disable_suspend: suspend {
+				drive-strength = <6>;
+				bias-disable;
+			};
+		};
+*/
+		/*add by chengdongsheng for nfc brcm2079x*/
+		bcm2079x_int_pin{
+			qcom,pins = <&gp 50>;
+			qcom,pin-func = <0>;
+			qcom,num-grp-pins = <1>;
+			label = "bcm2079x_int_pin";
+			
+			bcm2079x_int_active: active {
+				drive-strength = <6>;
+				bias-pull-up;
+			};
+			
+			bcm2079x_int_suspend: suspend {
+				drive-strength = <6>;
+				bias-pull-up;
+			};
+		};
+		
+		bcm2079x_en_pin{
+			qcom,pins = <&gp 20>;
+			qcom,num-grp-pins = <1>;
+			qcom,pin-func = <0>;
+			label = "bcm2079x_en_pin";
+			bcm2079x_en_active: active {
+				drive-strength = <6>;
+				bias-pull-up;
+			};
+			bcm2079x_en_suspend: suspend {
+				drive-strength = <6>;
+				bias-disable;
+			};
+		};
+
+		bcm2079x_ctl_pin{
+			qcom,pins =  <&gp 21>;
+			qcom,num-grp-pins = <1>;
+			qcom,pin-func = <0>;
+			label = "bcm2079x_ctl_pin";
+			bcm2079x_ctl_active: active {
+				drive-strength = <6>;
+				bias-pull-up;
+			};
+			bcm2079x_ctl_suspend: suspend {
+				drive-strength = <6>;
+				bias-disable;
+			};
+		};
+
+	};
+};
+
+

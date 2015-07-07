@@ -71,7 +71,9 @@ KERNEL_MODULES_INSTALL := system
 KERNEL_MODULES_OUT := $(TARGET_OUT)/lib/modules
 
 TARGET_PREBUILT_KERNEL := $(TARGET_PREBUILT_INT_KERNEL)
-
+#/* ZTEMT: Added by LiuYongfeng, 2014/5/5   PN:NA */
+export CONFIG_BUILD_ARM_APPENDED_DTB_IMAGE_NAMES_ZTEMT:=$(DTS_NAME)
+#/* ZTEMT END */
 define mv-modules
 mdpath=`find $(KERNEL_MODULES_OUT) -type f -name modules.dep`;\
 if [ "$$mdpath" != "" ];then\

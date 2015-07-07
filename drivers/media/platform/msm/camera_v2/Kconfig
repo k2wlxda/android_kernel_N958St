@@ -259,8 +259,32 @@ config MSM_GEMINI
 	---help---
 	  Enables support for the Gemini JPEG encoder engine for 8x60.
 
+config N958ST_CAMERA
+	bool "zte N958St camera"
+
+config N918ST_CAMERA
+	bool "zte N918St  camera"
+
+config NX511J_CAMERA
+	bool "zte NX511J  camera"
+
+config CAMERA_INFO_SHOW
+	bool "enable camera info show "
+
 config MSM_FD
 	 tristate "Qualcomm MSM FD face detection engine support"
 	 depends on MSMB_CAMERA
 	 ---help---
 	    Enables support for the MSM FD face detection engine.
+config IMX234
+	bool "Sensor IMX234 (BAYER 16M)"
+	depends on MSMB_CAMERA
+	---help---
+		Sony 16 MP Bayer Sensor with auto focus, uses
+		4 mipi lanes full resolution @30fps and
+config IMX179
+	bool "Sensor IMX179 (BAYER 8M)"
+	depends on MSMB_CAMERA
+	---help---
+		Sony 8 MP Bayer Sensor with auto focus, uses
+		2 mipi lanes full resolution @15fps and

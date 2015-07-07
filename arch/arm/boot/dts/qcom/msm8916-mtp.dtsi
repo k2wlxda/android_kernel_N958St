@@ -11,8 +11,8 @@
  */
 
 #include "msm8916.dtsi"
-#include "msm8916-pinctrl.dtsi"
-#include "msm8916-camera-sensor-mtp.dtsi"
+//#include "msm8916-pinctrl.dtsi"	//It has included in msm8916.dtsi
+//#include "msm8916-camera-sensor-mtp.dtsi"	//move it to msm8916-mtp-N9*8X.dts by tanyijun
 
 / {
 	aliases {
@@ -21,6 +21,7 @@
 };
 
 &soc {
+#if 0
 	i2c@78b9000 { /* BLSP1 QUP5 */
 		synaptics@20 {
 			compatible = "synaptics,rmi4";
@@ -47,6 +48,7 @@
 			clock-names = "iface_clk", "core_clk";
 		};
 	};
+#endif
 
 	gen-vkeys {
 		compatible = "qcom,gen-vkeys";
@@ -79,6 +81,7 @@
 	};
 
 	i2c@78b6000 { /* BLSP1 QUP2 */
+	#if 0
 		mpu6050@68 { /* Gyroscope and accelerometer sensor combo */
 			compatible = "invn,mpu6050";
 			reg = <0x68>;
@@ -128,7 +131,7 @@
 			ak,layout = <0x6>;
 			ak,auto-report;
 		};
-
+#endif
 	};
 
 	sound {
@@ -138,7 +141,7 @@
 		qcom,msm-codec-type = "internal";
 		qcom,msm-ext-pa = "primary";
 		qcom,msm-mclk-freq = <9600000>;
-		qcom,msm-mbhc-hphl-swh = <0>;
+		qcom,msm-mbhc-hphl-swh = <1>;
 		qcom,msm-mbhc-gnd-swh = <0>;
 		qcom,msm-micbias1-ext-cap;
 		qcom,msm-hs-micbias-type = "internal";
@@ -170,7 +173,8 @@
 						&cdc_ext_pa_ws_sus>;
 		pinctrl-4 = <&cross_conn_det_act>;
 		pinctrl-5 = <&cross_conn_det_sus>;
-		qcom,cdc-us-euro-gpios = <&msm_gpio 120 0>;
+
+		qcom,cdc-us-euro-gpios = <&msm_gpio 20 0>;
 		asoc-platform = <&pcm0>, <&pcm1>, <&voip>, <&voice>,
 				<&loopback>, <&compress>, <&hostless>,
 				<&afe>, <&lsm>, <&routing>, <&lpa>;
@@ -201,6 +205,7 @@
 				"msm-dai-q6-dev.32773", "msm-dai-q6-dev.32770";
 		asoc-codec = <&stub_codec>, <&pm8916_tombak_dig>;
 		asoc-codec-names = "msm-stub-codec.1", "tombak_codec";
+
 	};
 };
 
@@ -209,7 +214,7 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&uart_console_sleep>;
 };
-
+#if 0
 &soc {
 	gpio_keys {
 		compatible = "gpio-keys";
@@ -246,7 +251,7 @@
 		};
 	};
 };
-
+#endif
 &blsp1_uart1 {
 	status = "ok";
 };
@@ -271,6 +276,8 @@
 	status = "ok";
 };
 
+/* ZTEMT: sdhc_2 is moved to each project */
+/*
 &sdhc_2 {
 	vdd-supply = <&pm8916_l11>;
 	qcom,vdd-voltage-level = <2800000 2950000>;
@@ -293,10 +300,11 @@
 			1 &intc 0 221 0
 			2 &msm_gpio 38 0>;
 	interrupt-names = "hc_irq", "pwr_irq", "status_irq";
-	cd-gpios = <&msm_gpio 38 0x1>;
+	cd-gpios = <&msm_gpio 38 0x0>;
 
 	status = "ok";
 };
+*/
 
 &pm8916_mpps {
 	mpp@a000 { /* MPP 1 */
@@ -349,7 +357,7 @@
 		status = "disabled";
 	};
 };
-
+#if 0
 #include "dsi-panel-jdi-1080p-video.dtsi"
 
 &mdss_mdp {
@@ -388,7 +396,7 @@
 &dsi_jdi_1080_vid {
        qcom,cont-splash-enabled;
 };
-
+#endif
 &pm8916_chg {
 	status = "ok";
 	qcom,charging-disabled;

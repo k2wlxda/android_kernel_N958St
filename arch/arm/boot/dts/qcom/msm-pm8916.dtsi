@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2015, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2013-2014, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -32,7 +32,6 @@
 			qcom,pon-dbc-delay = <15625>;
 			qcom,system-reset;
 			qcom,clear-warm-reset;
-			qcom,store-hard-reset-reason;
 
 			qcom,pon_1 {
 				qcom,pon-type = <0>;
@@ -43,12 +42,13 @@
 				qcom,s2-type = <1>;
 				linux,code = <116>;
 			};
-
+/* Removed by Zhouqifang , Cause projects have independent volume down key.
 			qcom,pon_2 {
 				qcom,pon-type = <1>;
 				qcom,pull-up = <1>;
 				linux,code = <114>;
 			};
+*/
 		};
 
 		pm8916_mpps: mpps {
@@ -117,7 +117,7 @@
                         #address-cells = <1>;
                         #size-cells = <1>;
                         qcom,qpnp-rtc-write = <0>;
-                        qcom,qpnp-rtc-alarm-pwrup = <0>;
+                        qcom,qpnp-rtc-alarm-pwrup = <1>;
 
                         qcom,pm8916_rtc_rw@6000 {
                                 reg = <0x6000 0x100>;
@@ -207,13 +207,13 @@
 			#address-cells = <1>;
 			#size-cells = <1>;
 
-			qcom,vddmax-mv = <4200>;
-			qcom,vddsafe-mv = <4200>;
-			qcom,vinmin-mv = <4308>;
+			qcom,vddmax-mv = <4350>;  //ZTEMT_CHARGER 4200 --> 4350
+			qcom,vddsafe-mv = <4350>;  //ZTEMT_CHARGER 4200 --> 4350
+			qcom,vinmin-mv = <4350>;  //ZTEMT_CHARGER 4200 --> 4350
 			qcom,ibatsafe-ma = <1440>;
 			qcom,thermal-mitigation = <1440 720 630 0>;
-			qcom,cool-bat-decidegc = <100>;
-			qcom,warm-bat-decidegc = <450>;
+			qcom,cool-bat-decidegc = <50>;  //ZTEMT_CHARGER 100 --> -50
+			qcom,warm-bat-decidegc = <520>;  //ZTEMT_CHARGER 450 --> 520
 			qcom,cool-bat-mv = <4100>;
 			qcom,warm-bat-mv = <4100>;
 			qcom,ibatmax-warm-ma = <360>;
@@ -270,15 +270,15 @@
 			status = "disabled";
 
 			qcom,v-cutoff-uv = <3400000>;
-			qcom,max-voltage-uv = <4200000>;
+			qcom,max-voltage-uv = <4350000>;  //ZTEMT_CHARGER 4200000 --> 4350000
 			qcom,r-conn-mohm = <0>;
-			qcom,shutdown-soc-valid-limit = <100>;
+			qcom,shutdown-soc-valid-limit = <30>;  //ZTEMT_CHARGER 100 --> 30
 			qcom,low-soc-calculate-soc-threshold = <15>;
 			qcom,low-voltage-calculate-soc-ms = <1000>;
 			qcom,low-soc-calculate-soc-ms = <5000>;
 			qcom,calculate-soc-ms = <20000>;
 			qcom,volatge-soc-timeout-ms = <60000>;
-			qcom,low-voltage-threshold = <3450000>;
+			qcom,low-voltage-threshold = <3420000>; //ZTEMT_CHARGER 3450000 --> 3420000
 			qcom,s3-ocv-tolerence-uv = <1200>;
 			qcom,s2-fifo-length = <5>;
 			qcom,low-soc-fifo-length = <2>;

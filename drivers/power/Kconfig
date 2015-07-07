@@ -14,6 +14,12 @@ config POWER_SUPPLY_DEBUG
 	  Say Y here to enable debugging messages for power supply class
 	  and drivers.
 
+config ZTEMT_POWER_DEBUG
+	bool "ZTEMT Power Debug Feature"
+	default y
+	help
+	  ZTEMT Power Debug Feature
+
 config PDA_POWER
 	tristate "Generic PDA/phone power driver"
 	depends on !S390
@@ -542,6 +548,74 @@ config MSM_BCL_PERIPHERAL_CTL
 	  Say Y here to enable this BCL PMIC peripheral driver. This driver
 	  provides routines to configure and monitor the BCL
 	  PMIC peripheral.
+
+################ZTEMT charger
+menu "ZTEMT charger and battery"
+
+config ZTEMT_EXT_CHG_FG
+	bool "ZTEMT extern charger and FG"
+	default n
+	help
+	  ZZTEMT extern charger and FG 
+	  
+config ZTEMT_COMM_CHARGE
+	bool "ZTEMT comm  Charge"
+	default n
+	help
+	  ZTEMT comm  Charge 
+
+config ZTEMT_NX513_CHARGE
+	bool "ZTEMT NX513  Charge"
+	default n
+	help
+	  ZTEMT NX513  Charge 
+
+config ZTEMT_SMB1351_CHARGE
+	bool "ZTEMT SMB1351  Charge"
+	default n
+	help
+	  ZTEMT SMB1351  Charge  driver
+config ZTEMT_PM8916_BMS
+	bool "ZTEMT pm vm bms"
+	default n
+	help
+	  ZTEMT pm vm-bms
+
+config ZTEMT_BQ24296M_CHARGE
+	bool "ZTEMT BQ24296M Charge for NX511J"
+	default n
+	help
+	  ZTEMT BQ24296M Charge for NX511J
+
+config ZTEMT_BQ24296_CHARGE
+	bool "ZTEMT BQ24296 Charge"
+	default n
+	help
+	  ZTEMT BQ24296 Charge
+
+config ZTEMT_BATTERY_MONITOR
+	bool "ZTEMT Battery Monitor"
+	default n
+	help
+	  ZTEMT Battery Monitor
+
+config ZTEMT_BATTERY_FG_LC709203F
+	bool " ZTEMT support feul gauge lc709203f"
+	default n
+	help
+	   Say Y here to support ZTEMT feul gauge lc709203f
+
+config ZTEMT_BQ27520_BATTERY
+	bool "ZTEMT BQ27520 Battery FG"
+	default n
+	help
+	  ZTEMT BQ27520 Battery FG
+	  
+endmenu
+
+################ztemt battery config
+
+
 
 source "drivers/power/reset/Kconfig"
 

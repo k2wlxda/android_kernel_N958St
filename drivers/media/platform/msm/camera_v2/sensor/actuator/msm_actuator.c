@@ -17,10 +17,15 @@
 #include "msm_actuator.h"
 #include "msm_cci.h"
 
+#include  "../t4k37_otp.h"
+#include  "../t4k35_otp.h"
 DEFINE_MSM_MUTEX(msm_actuator_mutex);
 
 #undef CDBG
 #define CDBG(fmt, args...) pr_debug(fmt, ##args)
+// ZTEMT: fuyipeng add manual AF for imx234  -----start
+#define ZTE_ACTUATOR_MAF_OFFSET 100
+// ZTEMT: fuyipeng add manual AF for imx234  -----end
 
 static struct v4l2_file_operations msm_actuator_v4l2_subdev_fops;
 static int32_t msm_actuator_power_up(struct msm_actuator_ctrl_t *a_ctrl);
@@ -552,16 +557,100 @@ static int32_t msm_actuator_set_position(
 	int32_t index;
 	uint16_t next_lens_position;
 	uint16_t delay;
+ #if (defined(CONFIG_N958ST_CAMERA) || defined(CONFIG_N918ST_CAMERA))
+	uint32_t hw_params = 0xF400;
+	uint16_t value=0;
+#else	
 	uint32_t hw_params = 0;
+// ZTEMT: fuyipeng add manual AF for imx234  -----start
+	uint16_t value=0;
+// ZTEMT: fuyipeng add manual AF for imx234  -----end
+#endif
+/* ZTEMT: zhanglilang add manual AF compensation for rohm_bu64297gwz  -----start */
+      	uint16_t dac_comp = 99; 
+/* ZTEMT: zhanglilang add manual AF compensation for rohm_bu64297gwz  -----end */
 	struct msm_camera_i2c_reg_setting reg_setting;
 	CDBG("%s Enter %d\n", __func__, __LINE__);
 	if (set_pos->number_of_steps  == 0)
 		return rc;
+  // ZTEMT: fuyipeng add manual AF for imx234  -----start
+    pr_err("msm_actuator_set_position---act_name:%s \n", a_ctrl->act_name);
+     if(!strncmp(a_ctrl->act_name, "bu64291gwz_t4k37_msm8939", 32)){
+		#define NX511J_V2A_MEX_CAMERA
+		hw_params = 0xF400;
+		value = 0;
+	}
+    if ((!strncmp(a_ctrl->act_name, "rohm_bu64297gwz", 32)) || (!strncmp(a_ctrl->act_name, "imx214_sunny_c1507", 32)))
+    {
+  	  hw_params = 0xF400;
+    }
+    // ZTEMT: fuyipeng add manual AF for imx234  -----end
 
 	a_ctrl->i2c_tbl_index = 0;
 	for (index = 0; index < set_pos->number_of_steps; index++) {
 		next_lens_position = set_pos->pos[index];
 		delay = set_pos->delay[index];
+// ZTEMT: fuyipeng add manual AF for imx234  -----start
+		if ((!strncmp(a_ctrl->act_name, "rohm_bu64297gwz", 32)) || (!strncmp(a_ctrl->act_name, "imx214_sunny_c1507", 32))) {
+			value = set_pos->pos[index];
+			if(value < 0 || value > 79){
+				pr_err("%s value is invalid %d\n", __func__, __LINE__);
+				return rc;
+			}
+
+			value = 79 - value;
+			if(value == 79)
+			{
+				next_lens_position = a_ctrl->region_params[a_ctrl->region_size - 1].step_bound[MOVE_NEAR] + 
+					a_ctrl->step_position_table[0] + ZTE_ACTUATOR_MAF_OFFSET;
+				if (next_lens_position > 1000)
+				{
+					next_lens_position = 1000;
+				}
+				a_ctrl->curr_step_pos = a_ctrl->region_params[a_ctrl->region_size - 1].step_bound[MOVE_NEAR] - 3;
+			}
+			else
+			{
+				 int code_total = a_ctrl->region_params[a_ctrl->region_size - 1].step_bound[MOVE_NEAR];
+				 next_lens_position = a_ctrl->step_position_table[0] + (code_total * value / 79) + dac_comp;
+				 a_ctrl->curr_step_pos = next_lens_position - a_ctrl->step_position_table[0];
+			}
+			// ZTEMT: fuyipeng add manual AF for imx234  -----end
+		}
+
+ #if (defined(CONFIG_N958ST_CAMERA) || defined(CONFIG_N918ST_CAMERA)||defined(NX511J_V2A_MEX_CAMERA))
+         value = set_pos->pos[index];
+        if(value < 0 || value > 79){     /* if over total steps*/
+            pr_err("%s Failed I2C write Line %d\n", __func__, __LINE__);
+                return rc;
+         }
+ 	 dac_comp = 77;
+        value = 79 - value;
+
+        if(value == 79){
+    		if((af_otp_status==1)&&(af_macro_value>af_inifity_value))
+    		   next_lens_position= af_macro_value+150;
+    		else if ((t4k35_af_otp_status == 1) && (t4k35_af_macro_value > t4k35_af_inifity_value))
+    		{
+    		    next_lens_position= t4k35_af_macro_value + 150;
+    		}
+    		else
+    		   next_lens_position = 800;
+            a_ctrl->curr_step_pos = a_ctrl->region_params[a_ctrl->region_size - 1].step_bound[MOVE_NEAR] - 3;
+        }else{
+             if((af_otp_status==1)&&(af_macro_value>af_inifity_value))
+		        a_ctrl->step_position_table[0]= af_inifity_value -150;
+			 else if ((t4k35_af_otp_status == 1) && (t4k35_af_macro_value > t4k35_af_inifity_value))
+			 {
+			     a_ctrl->step_position_table[0]= t4k35_af_inifity_value - 100;
+			 }
+            next_lens_position = a_ctrl->step_position_table[0] + 7*value + dac_comp;
+			a_ctrl->curr_step_pos = next_lens_position - a_ctrl->step_position_table[0];
+        }
+    //    pr_err(" jun value = %d, af_macro_value=%d,af_inifity_value = %d,af_otp_status = %d\n",  
+	//		                                                         value,af_macro_value,af_inifity_value,af_otp_status);
+        pr_err(" jun next_lens_position = %d, cur_step_pos=%d\n",  next_lens_position,a_ctrl->curr_step_pos);		
+ #endif
 		a_ctrl->func_tbl->actuator_parse_i2c_params(a_ctrl,
 		next_lens_position, hw_params, delay);
 
@@ -759,6 +848,17 @@ static int32_t msm_actuator_config(struct msm_actuator_ctrl_t *a_ctrl,
 		if (rc < 0)
 			pr_err("init table failed %d\n", rc);
 		break;
+  // ZTEMT: fuyipeng add for manual AF -----start
+    case CFG_SET_ACTUATOR_NAME:
+  		if (NULL != cdata->cfg.act_name)
+  		{
+  			memcpy(a_ctrl->act_name,
+  					 cdata->cfg.act_name,
+  					 sizeof(a_ctrl->act_name));
+  			pr_err("CFG_SET_ACTUATOR_NAME ---act_name:%s \n", a_ctrl->act_name);
+  		}
+  	    break;
+    // ZTEMT: fuyipeng add for manual AF -----end
 
 	case CFG_SET_DEFAULT_FOCUS:
 		rc = a_ctrl->func_tbl->actuator_set_default_focus(a_ctrl,
@@ -970,6 +1070,13 @@ static long msm_actuator_subdev_do_ioctl(
 
 			parg = &actuator_data;
 			break;
+		// ZTEMT: fuyipeng add for manual AF -----start
+        case CFG_SET_ACTUATOR_NAME:
+           actuator_data.cfgtype = u32->cfgtype;
+           actuator_data.cfg.act_name = u32->cfg.act_name;
+           parg = &actuator_data;
+		break;
+            // ZTEMT: fuyipeng add for manual AF -----end
 		case CFG_SET_DEFAULT_FOCUS:
 		case CFG_MOVE_FOCUS:
 			actuator_data.cfgtype = u32->cfgtype;

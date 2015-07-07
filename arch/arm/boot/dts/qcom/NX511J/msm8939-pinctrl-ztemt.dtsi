@@ -1,0 +1,41 @@
+/* Copyright (c) 2013-2014, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&soc {
+	tlmm_pinmux: pinctrl@1000000 {
+		compatible = "qcom,msm-tlmm-8939", "qcom,msm-tlmm-8916";
+		reg = <0x1000000 0x300000>;
+		interrupts = <0 208 0>;
+
+		// ZTEMT ADD START BY ZHOUQIFANG FOR AW9106B'S NODE
+		  aw9016b_ctl_pin:aw9106b_ctl_pin {
+			qcom,pins = <&gp 17>;  //qcom,pins = <&gp 17>, <&gp 10>;
+			qcom,num-grp-pins = <1>;			   //qcom,num-grp-pins = <2>;
+			qcom,pin-func = <0>;
+			label = "aw9106b_ctl_pin";
+
+			/* active state*/
+			aw9106b_ctl_active: active {
+				drive-strength = <6>;
+				bias-disable;
+			};
+
+			/*suspended state*/
+			aw9106b_ctl_suspend: suspend {
+				drive-strength = <6>;
+				bias-disable;
+			};
+		};
+   };
+};
+
+

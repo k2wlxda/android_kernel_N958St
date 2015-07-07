@@ -18,6 +18,7 @@
 #define RESTART_DLOAD  0x1
 
 void msm_set_restart_mode(int mode);
+void msm_set_download_mode(int mode);
 extern int pmic_reset_irq;
 
 #endif

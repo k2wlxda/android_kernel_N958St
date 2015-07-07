@@ -1,0 +1,150 @@
+/* Copyright (c) 2013-2014, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&soc {
+	tlmm_pinmux: pinctrl@1000000 {
+		compatible = "qcom,msm-tlmm-8916";
+		reg = <0x1000000 0x300000>;
+		interrupts = <0 208 0>;
+
+		// ZTEMT ADD START BY ZHOUQIFANG FOR AW9106B'S NODE
+		  aw9016b_ctl_pin:aw9106b_ctl_pin {
+			qcom,pins = <&gp 17>;  //qcom,pins = <&gp 17>, <&gp 10>;
+			qcom,num-grp-pins = <1>;			   //qcom,num-grp-pins = <2>;
+			qcom,pin-func = <0>;
+			label = "aw9106b_ctl_pin";
+
+			/* active state*/
+			aw9106b_ctl_active: active {
+				drive-strength = <6>;
+				bias-disable;
+			};
+
+			/*suspended state*/
+			aw9106b_ctl_suspend: suspend {
+				drive-strength = <6>;
+				bias-disable;
+			};
+		};
+		// ZTEMT ADD END
+		pmx_lcd_vsp_en_gpio{
+			qcom,pins = <&gp 97>;
+			qcom,pin-func = <0>;
+			qcom,num-grp-pins = <1>;
+			label = "pmx_lcd_vsp";
+
+			vsp_en_gpio_active: active {
+				drive-strength = <6>;
+				bias-pull-up;
+			};
+
+			vsp_en_gpio_suspend: suspend {
+				drive-strength = <6>;
+				bias-pull-up;
+			};
+		};
+
+		pmx_lcd_vsn_en_gpio{
+			qcom,pins = <&gp 98>;
+			qcom,pin-func = <0>;
+			qcom,num-grp-pins = <1>;
+			label = "pmx_lcd_vsn";
+
+			vsn_en_gpio_active: active {
+				drive-strength = <6>;
+				bias-pull-up;
+			};
+
+			vsn_en_gpio_suspend: suspend {
+				drive-strength = <6>;
+				bias-pull-up;
+			};
+		};
+
+		pmx_mdss_reset: pmx_mdss_reset {
+			qcom,pins = <&gp 25>;
+			qcom,pin-func = <0>;
+			qcom,num-grp-pins = <1>;
+			label = "mdss-reset-pin";
+			mdss_reset_active: active {
+				drive-strength = <6>; /* 6 mA */
+				bias-pull-up; /* pull up */
+				output-high;
+			};
+			mdss_reset_suspend: suspend {
+				drive-strength = <2>; /* 2 mA */
+				bias-pull-down; /* pull down */
+				output-low;
+			};
+		};
+
+		/*ZTEMT Add For TouchScreen*/
+		gt9xx_int_pin {
+			qcom,pins = <&gp 13>;
+			qcom,num-grp-pins = <1>;
+			qcom,pin-func = <0>;
+			label = "gt9xx_int_pin";
+			/*active state*/
+			gt9xx_int_default: gt9xx_int_default {
+				drive-strength = <2>;/*2MA*/
+				bias-disable;
+			};
+			/*suspended state*/
+			gt9xx_int_sleep: gt9xx_int_sleep {
+				drive-strength = <2>;/*2MA*/
+				bias-disable;
+			};
+		};
+		
+		cyttsp4_int_pin {
+			qcom,pins = <&gp 13>;
+			qcom,num-grp-pins = <1>;
+			qcom,pin-func = <0>;
+			label = "cyttsp4_int_pin";
+			/*active state*/
+			cyttsp4_int_default: cyttsp4_int_default {
+				drive-strength = <10>;/*10MA*/
+				bias-pull-up;
+			};
+			/*suspended state*/
+			cyttsp4_int_sleep: cyttsp4_int_sleep {
+				drive-strength = <2>;/*2MA*/
+				bias-pull-up;
+			};
+		};
+		/*ZTEMT Add For TouchScreen*/
+
+/*CONFIG_ZTEMT_BQ24296_CHARGE*/
+		bq24295_int_pin_active {
+			qcom,pins = <&gp 11>;
+			qcom,num-grp-pins = <1>;
+			qcom,pin-func = <0>;
+			label = "bq24295_int_gpio_active";
+			bq24295_int_default_active: bq24295_int_default_active {
+				drive-strength = <2>;	/* 2 MA */
+				bias-pull-up;		/* PULL UP*/
+			};
+		};
+		bq24295_int_pin_suspend {
+			qcom,pins = <&gp 11>;
+			qcom,num-grp-pins = <1>;
+			qcom,pin-func = <0>;
+			label = "bq24295_int_gpio_suspend";
+			bq24295_int_default_suspend: bq24295_int_default_suspend {
+				drive-strength = <2>;	/* 2 MA */
+				bias-pull-down; /* pull down */
+			};
+		};
+	};
+};
+
+

@@ -1104,6 +1104,8 @@ int msm_camera_get_dt_vreg_data(struct device_node *of_node,
 
 	rc = of_property_read_u32_array(of_node, "qcom,cam-vreg-type",
 		vreg_array, count);
+	
+	pr_err("ssss rc=%d\n",rc);
 	if (rc != -EINVAL) {
 		if (rc < 0) {
 			pr_err("%s failed %d\n", __func__, __LINE__);
@@ -1111,7 +1113,7 @@ int msm_camera_get_dt_vreg_data(struct device_node *of_node,
 		} else {
 			for (i = 0; i < count; i++) {
 				vreg[i].type = vreg_array[i];
-				CDBG("%s cam_vreg[%d].type = %d\n", __func__, i,
+				pr_err("%s cam_vreg[%d].type = %d\n", __func__, i,
 					vreg[i].type);
 			}
 		}

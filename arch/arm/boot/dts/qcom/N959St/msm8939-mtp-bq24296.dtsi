@@ -1,0 +1,48 @@
+/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&soc {
+	i2c_4: i2c@78b8000 { /* BLSP1 QUP4 */
+			   /*
+				CONFIG_ZTEMT_BQ24296_CHARGE
+				*/
+				bq24296_supply: bq24296-chg@6B {
+						compatible = "ti,bq24296-chg";
+						reg = <0x6B>;
+						interrupt-parent = <&msm_gpio>;
+						pinctrl-names = "active", "suspend";
+						pinctrl-0 = <&bq24295_int_default_active>;
+						pinctrl-1 = <&bq24295_int_default_suspend >;
+						bq24296,ce-gpio = <&msm_gpio 11 0x01>;  
+						regulator-name = "bq24296_otg_vreg";
+						
+						qcom,bq24296-vadc = <&pm8916_vadc>;
+			     qcom,bq24296-adc_tm = <&pm8916_adc_tm>;
+			     
+						bq24296,maxinput-chg-mv = <4360>;  
+						bq24296,maxinput-chg-ma = <500>;  
+						bq24296,v-cutoff-mv = <3500>;  
+						/*1.5A*/
+						bq24296,ibatmax-ma = <1536>;  
+						bq24296,ibatterm-ma = <128>;  
+						bq24296,ibattprechg-ma = <256>;  
+						bq24296,max-voltage-mv = <4368>;  
+						bq24296,watchdog-reset-ms = <160000>;  
+						bq24296,max-charger-cycle-mins = <720>;  
+						bq24296,boost-output-chg-mv = <5190>;  
+						bq24296,boost-hot-temp-threshold = <55>;  
+						bq24296,boost-cold-temp-threshold = <0>;  
+		  			bq24296,thermal_regulation-threshold = <120>;  
+				};
+	};
+};
+

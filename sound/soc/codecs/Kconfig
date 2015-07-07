@@ -553,6 +553,17 @@ config SND_SOC_TPA6130A2
 config SND_SOC_MSM_STUB
 	tristate
 
+config SND_SOC_AK4375
+	bool "AK4375 headphone AMP support"
+	default n
+	help
+	add the AK4375 headphone AMP driver in project NX513J	
+	
+config ZTEMT_EURO_HEADSET_SUPPORT
+	bool "EURO Headset Support"
+	help
+	By default we support US heaset type. If we want to support the EURO heaset type ,we have to add a swith whic can swap the MIC and Ground
+
 config SND_SOC_MSM_HDMI_CODEC_RX
 	bool "HDMI Audio Playback"
 	depends on FB_MSM_MDSS_HDMI_PANEL && (SND_SOC_MSM8974 || SND_SOC_APQ8084 || SND_SOC_MSM8994)

@@ -17,7 +17,7 @@
 		qcom,msm-snd-card-id = <0>;
 		qcom,msm-codec-type = "internal";
 		qcom,msm-ext-pa = "primary";
-		qcom,msm-mbhc-hphl-swh = <0>;
+		qcom,msm-mbhc-hphl-swh = <1>;
 		qcom,msm-mbhc-gnd-swh = <0>;
 		qcom,msm-micbias1-ext-cap;
 		qcom,msm-hs-micbias-type = "internal";
@@ -34,12 +34,17 @@
 		pinctrl-names = "cdc_lines_act",
 				"cdc_lines_sus",
 				"cross_conn_det_act",
-				"cross_conn_det_sus";
+				"cross_conn_det_sus",
+				"ext_pa_ctrl_act",
+				"ext_pa_ctrl_sus";
 		pinctrl-0 = <&cdc_pdm_lines_act>;
 		pinctrl-1 = <&cdc_pdm_lines_sus>;
 		pinctrl-2 = <&cross_conn_det_act>;
 		pinctrl-3 = <&cross_conn_det_sus>;
-		qcom,cdc-us-euro-gpios = <&msm_gpio 120 0>;
+		pinctrl-4 = <&ext_pa_ctrl_act>;
+		pinctrl-5 = <&ext_pa_ctrl_sus>;
+		qcom,cdc-us-euro-gpios = <&msm_gpio 50 0>;
+		qcom,cdc-ext-amp-gpios = <&msm_gpio 116 0>;
 		asoc-platform = <&pcm0>, <&pcm1>, <&voip>, <&voice>,
 				<&loopback>, <&compress>, <&hostless>,
 				<&afe>, <&lsm>, <&routing>, <&lpa>;

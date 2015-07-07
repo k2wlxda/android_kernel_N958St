@@ -1,0 +1,37 @@
+/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+//add by swang  ZTEMT_BQ27520_BATTERY
+
+&soc {
+	i2c@78b8000 { /* BLSP1 QUP4   */
+        bq27520_battery: bq27520_i2c_adapter@55 {
+			compatible = "ti,bq27520";
+			reg = <0x55>;
+			qcom,bq27520-vadc = <&pm8916_vadc>;
+			interrupt-parent = <&msm_gpio>;
+			interrupt-names = "bq27520_irq";
+			pinctrl-names = "bq27520_int_default","bq27520_int_sleep";
+ 			pinctrl-0 = <&bq27520_int_default>;
+			pinctrl-1 = <&bq27520_int_sleep>;
+ 			bq-soc-int-gpio = <&msm_gpio 51 0x00>;
+ 			bq-low-int-gpio = <&msm_gpio 114 0x00>;
+			low-voltage-threshold = <3400>;
+		};
+	};
+};
+
+&pm8916_bms {
+	status = "ok";
+	qcom,disable-bms;
+};
+

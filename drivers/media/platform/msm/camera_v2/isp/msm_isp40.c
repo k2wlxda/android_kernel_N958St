@@ -30,7 +30,7 @@
 #define VFE40_STATS_BURST_LEN 1
 #define VFE40_STATS_BURST_LEN_8916_VERSION 2
 #define VFE40_UB_SIZE 1536 /* 1536 * 128 bits = 24KB */
-#define VFE40_UB_SIZE_8916 2048 /* 2048 * 128 bits = 32KB */
+#define VFE40_UB_SIZE_8916 3072 /* 2048 * 128 bits = 32KB  change by congshan qcom patch*/
 #define VFE40_EQUAL_SLICE_UB 190 /* (UB_SIZE - STATS SIZE)/6 */
 #define VFE40_EQUAL_SLICE_UB_8916 276
 #define VFE40_TOTAL_WM_UB 1144 /* UB_SIZE - STATS SIZE */
